@@ -1,0 +1,9 @@
+{
+  "name": "aicte-m6-governance-server",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}

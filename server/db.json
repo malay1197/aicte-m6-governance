@@ -1,0 +1,334 @@
+{
+  "meetings": [
+    {
+      "id": "meet-001",
+      "name": "AICTE Review Meeting - Budget Allocations Q3",
+      "date": "2026-08-05",
+      "startTime": "10:00 AM",
+      "endTime": "11:30 AM",
+      "totalParticipants": 12,
+      "present": 10,
+      "absent": 2,
+      "late": 3,
+      "status": "Completed",
+      "participants": [
+        {
+          "id": "p-001",
+          "name": "Dr. Anil Sahasrabudhe",
+          "role": "Chairman",
+          "joinTime": "09:55 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "95 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-002",
+          "name": "Prof. Rajive Kumar",
+          "role": "Member Secretary",
+          "joinTime": "09:58 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "92 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-003",
+          "name": "Dr. Abhay Jere",
+          "role": "Chief Innovation Officer",
+          "joinTime": "10:05 AM",
+          "leaveTime": "11:28 AM",
+          "duration": "83 min",
+          "status": "Late"
+        },
+        {
+          "id": "p-004",
+          "name": "Shri Vineet Joshi",
+          "role": "Government Nominee",
+          "joinTime": "09:54 AM",
+          "leaveTime": "11:15 AM",
+          "duration": "81 min",
+          "status": "Left Early"
+        },
+        {
+          "id": "p-005",
+          "name": "Smt. Mamta R. Agarwal",
+          "role": "Adviser I",
+          "joinTime": "10:08 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "82 min",
+          "status": "Late"
+        },
+        {
+          "id": "p-006",
+          "name": "Dr. Ramesh Unnikrishnan",
+          "role": "Advisor II",
+          "joinTime": "09:59 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "91 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-007",
+          "name": "Prof. M.P. Poonia",
+          "role": "Vice Chairman",
+          "joinTime": "09:57 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "93 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-008",
+          "name": "Shri Harish C. Rai",
+          "role": "Advisor (E&T)",
+          "joinTime": "10:15 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "75 min",
+          "status": "Late"
+        },
+        {
+          "id": "p-009",
+          "name": "Dr. Amit Dutta",
+          "role": "Regional Officer",
+          "joinTime": "09:59 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "91 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-010",
+          "name": "Shri Sanjeev Kumar",
+          "role": "System Administrator",
+          "joinTime": "09:50 AM",
+          "leaveTime": "11:30 AM",
+          "duration": "100 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-011",
+          "name": "Prof. K.K. Aggarwal",
+          "role": "NBA Chairman",
+          "joinTime": "--",
+          "leaveTime": "--",
+          "duration": "0 min",
+          "status": "Absent"
+        },
+        {
+          "id": "p-012",
+          "name": "Dr. K.P. Isaac",
+          "role": "External Expert",
+          "joinTime": "--",
+          "leaveTime": "--",
+          "duration": "0 min",
+          "status": "Absent"
+        }
+      ]
+    },
+    {
+      "id": "meet-002",
+      "name": "Project Evaluation Committee - Smart India Hackathon",
+      "date": "2026-08-06",
+      "startTime": "02:00 PM",
+      "endTime": "04:30 PM",
+      "totalParticipants": 8,
+      "present": 7,
+      "absent": 1,
+      "late": 1,
+      "status": "Completed",
+      "participants": [
+        {
+          "id": "p-001",
+          "name": "Dr. Abhay Jere",
+          "role": "Chief Innovation Officer",
+          "joinTime": "01:55 PM",
+          "leaveTime": "04:30 PM",
+          "duration": "155 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-013",
+          "name": "Mr. Malay Vyas",
+          "role": "SIH Evaluator (M6 Panel)",
+          "joinTime": "01:50 PM",
+          "leaveTime": "04:30 PM",
+          "duration": "160 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-014",
+          "name": "Dr. Mohit Gambhir",
+          "role": "Innovation Director",
+          "joinTime": "02:03 PM",
+          "leaveTime": "04:28 PM",
+          "duration": "145 min",
+          "status": "Late"
+        },
+        {
+          "id": "p-015",
+          "name": "Smt. Vinita Singhal",
+          "role": "Industry Representative",
+          "joinTime": "01:58 PM",
+          "leaveTime": "04:30 PM",
+          "duration": "152 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-016",
+          "name": "Prof. S. R. Patel",
+          "role": "Senior Academician",
+          "joinTime": "01:59 PM",
+          "leaveTime": "04:30 PM",
+          "duration": "151 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-017",
+          "name": "Dr. Sunita Sharma",
+          "role": "DST Representative",
+          "joinTime": "01:57 PM",
+          "leaveTime": "04:10 PM",
+          "duration": "133 min",
+          "status": "Left Early"
+        },
+        {
+          "id": "p-018",
+          "name": "Shri Neeraj Saxena",
+          "role": "Advisor (RIFD)",
+          "joinTime": "01:54 PM",
+          "leaveTime": "04:30 PM",
+          "duration": "156 min",
+          "status": "Present"
+        },
+        {
+          "id": "p-019",
+          "name": "Dr. Nitin Kumar",
+          "role": "External Evaluator",
+          "joinTime": "--",
+          "leaveTime": "--",
+          "duration": "0 min",
+          "status": "Absent"
+        }
+      ]
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "log-101",
+      "timestamp": "2026-08-08 14:15:22",
+      "user": "admin_aicte",
+      "action": "Report Generated",
+      "module": "Reports (M6)",
+      "ip": "192.168.1.45",
+      "status": "Success",
+      "severity": "INFO",
+      "details": "Generated Security Audit Report for Q2."
+    },
+    {
+      "id": "log-102",
+      "timestamp": "2026-08-08 13:58:10",
+      "user": "sys_monitor",
+      "action": "Security Warning",
+      "module": "Audit (M6)",
+      "ip": "10.0.4.12",
+      "status": "Triggered",
+      "severity": "CRITICAL",
+      "details": "Multiple failed login attempts detected on admin profile."
+    },
+    {
+      "id": "log-103",
+      "timestamp": "2026-08-08 13:10:44",
+      "user": "prof_rajive",
+      "action": "Meeting Created",
+      "module": "Meeting (M2)",
+      "ip": "172.16.22.102",
+      "status": "Success",
+      "severity": "INFO",
+      "details": "Faculty Governance Meeting - National Level Norms created successfully."
+    }
+  ],
+  "securityEvents": [
+    {
+      "id": "sec-001",
+      "title": "Multiple failed login attempts",
+      "description": "System detected 6 unsuccessful login attempts on 'admin_aicte' within 2 minutes.",
+      "timestamp": "2026-08-08 13:58:10",
+      "severity": "CRITICAL",
+      "status": "Active",
+      "details": "IP quarantined. AICTE governance team notified."
+    },
+    {
+      "id": "sec-002",
+      "title": "Permission updated securely",
+      "description": "Admin granted temporary read permissions on evaluation files.",
+      "timestamp": "2026-08-08 12:45:00",
+      "severity": "INFO",
+      "status": "Resolved",
+      "details": "Verified with Blockchain ledger (M4)."
+    }
+  ],
+  "notifications": [
+    {
+      "id": "not-001",
+      "message": "Reminder: Review meeting report is pending signoff.",
+      "timestamp": "2026-08-08 14:00:00",
+      "priority": "HIGH",
+      "read": true,
+      "type": "reminder"
+    },
+    {
+      "id": "not-002",
+      "message": "Action Item: Approve SIH incubation grant criteria by tonight.",
+      "timestamp": "2026-08-08 12:30:00",
+      "priority": "HIGH",
+      "read": true,
+      "type": "action"
+    }
+  ],
+  "memory": [
+    {
+      "id": "mem-001",
+      "title": "AICTE Review Meeting - Budget Allocations Q3 2026",
+      "category": "Meetings",
+      "date": "2026-08-05",
+      "relevance": 98,
+      "details": {
+        "summary": "AICTE quarterly budget allocation approval. Allocated INR 12.5 Crores.",
+        "decision": "Approved funding increase of 15% for innovation cell labs.",
+        "actionItems": "Dr. Abhay Jere to finalize dispersal metrics.",
+        "blockchainHash": "0x892e8bf723da890bf2a3e9c8821a9980d28711e9a2bc91e772153c3d2890fb91",
+        "authorizedRoles": [
+          "Admin",
+          "Chairman",
+          "CIO",
+          "Advisor"
+        ],
+        "documents": [
+          "AICTE_Budget_2026_Q3.pdf"
+        ],
+        "aiHighlights": "Decided in 12 mins. Primary advocates: Prof M.P. Poonia."
+      }
+    },
+    {
+      "id": "mem-002",
+      "title": "SIH Incubation Grant Dispersal Scheme",
+      "category": "Decisions",
+      "date": "2026-08-05",
+      "relevance": 92,
+      "details": {
+        "summary": "Approval of the criteria for selecting hackathon project prototypes.",
+        "decision": "SIH final prototypes with gold rating will receive 2 Lakhs seed grant.",
+        "actionItems": "All coordinators to distribute guidelines.",
+        "blockchainHash": "0xf3a890b7218d22e8bf287c8811e92bc9153c99e9c88e77c3d215bda90ab228fc",
+        "authorizedRoles": [
+          "Admin",
+          "Chairman",
+          "CIO",
+          "Evaluator"
+        ],
+        "documents": [
+          "Incubation_Select_Guidelines_v2.pdf"
+        ],
+        "aiHighlights": "Consensus reached rapidly."
+      }
+    }
+  ],
+  "reports": []
+}

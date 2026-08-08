@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+:root {
+  --color-gov-dark: #f8fafc;
+  --color-gov-card: #ffffff;
+  --color-gov-border: #cbd5e1;
+  --color-gov-primary: #1d4ed8;
+  --color-gov-primaryLight: #2563eb;
+  --color-gov-secondary: #059669;
+  --color-gov-secondaryLight: #10b981;
+  --color-gov-success: #059669;
+  --color-gov-warning: #d97706;
+  --color-gov-danger: #dc2626;
+  --color-gov-text: #0f172a;
+  --color-gov-muted: #475569;
+
+  --shadow-glow-primary: 0 0 15px rgba(29, 78, 216, 0.15);
+  --shadow-glow-success: 0 0 15px rgba(5, 150, 105, 0.15);
+  --shadow-glow-warning: 0 0 15px rgba(217, 119, 6, 0.15);
+  --shadow-glow-danger: 0 0 15px rgba(220, 38, 38, 0.15);
+
+  --bg-gradient: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.02) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.02) 0px, transparent 50%);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(203, 213, 225, 0.6);
+  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --glass-hover-bg: rgba(255, 255, 255, 0.95);
+  --scrollbar-track: rgba(241, 245, 249, 0.5);
+  --scrollbar-thumb: rgba(148, 163, 184, 0.5);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
+}
+
+.dark {
+  --color-gov-dark: #0a0f1d;
+  --color-gov-card: #131c31;
+  --color-gov-border: #1e294b;
+  --color-gov-primary: #3b82f6;
+  --color-gov-primaryLight: #60a5fa;
+  --color-gov-secondary: #10b981;
+  --color-gov-secondaryLight: #34d399;
+  --color-gov-success: #10b981;
+  --color-gov-warning: #f59e0b;
+  --color-gov-danger: #ef4444;
+  --color-gov-text: #f8fafc;
+  --color-gov-muted: #64748b;
+
+  --shadow-glow-primary: 0 0 15px rgba(59, 130, 246, 0.4);
+  --shadow-glow-success: 0 0 15px rgba(16, 185, 129, 0.4);
+  --shadow-glow-warning: 0 0 15px rgba(245, 158, 11, 0.4);
+  --shadow-glow-danger: 0 0 15px rgba(239, 68, 68, 0.4);
+
+  --bg-gradient: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                 radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                 radial-gradient(at 50% 100%, rgba(79, 70, 229, 0.08) 0px, transparent 50%);
+  --glass-bg: rgba(19, 28, 49, 0.65);
+  --glass-border: rgba(30, 41, 75, 0.5);
+  --glass-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  --glass-hover-bg: rgba(25, 36, 62, 0.85);
+  --scrollbar-track: rgba(10, 15, 29, 0.5);
+  --scrollbar-thumb: rgba(30, 41, 75, 0.8);
+  --scrollbar-thumb-hover: rgba(59, 130, 246, 0.6);
+}
+
+@theme {
+  --color-gov-dark: var(--color-gov-dark);
+  --color-gov-card: var(--color-gov-card);
+  --color-gov-border: var(--color-gov-border);
+  --color-gov-primary: var(--color-gov-primary);
+  --color-gov-primaryLight: var(--color-gov-primaryLight);
+  --color-gov-secondary: var(--color-gov-secondary);
+  --color-gov-secondaryLight: var(--color-gov-secondaryLight);
+  --color-gov-success: var(--color-gov-success);
+  --color-gov-warning: var(--color-gov-warning);
+  --color-gov-danger: var(--color-gov-danger);
+  --color-gov-text: var(--color-gov-text);
+  --color-gov-muted: var(--color-gov-muted);
+
+  --shadow-glow-primary: var(--shadow-glow-primary);
+  --shadow-glow-success: var(--shadow-glow-success);
+  --shadow-glow-warning: var(--shadow-glow-warning);
+  --shadow-glow-danger: var(--shadow-glow-danger);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-fade-in: fadeIn 0.5s ease-out forwards;
+  --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes slideUp {
+    0% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-gov-dark text-gov-text font-sans antialiased overflow-x-hidden transition-colors duration-300;
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+  }
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.glass-hover:hover {
+  background: var(--glass-hover-bg);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: var(--shadow-glow-primary);
+  transform: translateY(-2px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium Card Design */
+.gov-card {
+  @apply rounded-xl p-6 transition-all duration-300;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Glowing animations for alerts */
+@keyframes pulse-glow-red {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+.glow-red {
+  animation: pulse-glow-red 2s infinite;
+}
+
+@keyframes pulse-glow-amber {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+    border-color: rgba(245, 158, 11, 0.6);
+  }
+}
+
+.glow-amber {
+  animation: pulse-glow-amber 2s infinite;
+}
