@@ -10,7 +10,7 @@ except ImportError:
     sys.exit(1)
 
 def generate_detailed_pptx():
-    print("Initializing Detailed PowerPoint Presentation generation...")
+    print("Initializing Overhauled PowerPoint Presentation generation...")
     prs = Presentation()
     prs.slide_width = Inches(13.333) # 16:9 widescreen layout
     prs.slide_height = Inches(7.5)
@@ -28,156 +28,151 @@ def generate_detailed_pptx():
         {
             "is_title": True,
             "title": "SECURE AICTE MEETING & GOVERNANCE PLATFORM",
-            "subtitle": "Module M6: Audit + Attendance + Reports + Institutional Memory\n\nDetailed Technical Breakdown: React, Node.js + Express, PostgreSQL, pgvector/FTS\nSmart India Hackathon Presentation Deck"
+            "subtitle": "Complete Overhaul & Integrated Multi-Module Security Suite\n\nWalkthrough Deck: Light/Dark Mode, MFA, Jitsi WebRTC, S3 Files, Blockchain, & AI MoMs\nSmart India Hackathon Presentation Deck"
         },
-        # Slide 2: Scope & Role
+        # Slide 2: Global UI/UX Design System
         {
-            "title": "Module M6 Scope & Platform Role",
+            "title": "Topic: Global UI/UX Design & Theme System",
             "sections": [
                 {
-                    "heading": "Centralized Auditing & Governance Cell",
-                    "text": "M6 tracks, parses, and acts as the central logs ledger for all governance operations (M1 Auth, M2 Meetings, M3 Files, M4 Blockchain, M5 AI Transcripts)."
+                    "heading": "Light & Dark Mode Integration",
+                    "text": "• Responsive CSS Variables: Configured in index.css with mapped root custom properties.\n"
+                         "• LocalStorage Persistence: User theme selections remain consistent on page reloads.\n"
+                         "• System Preference Checks: Respects browser media queries on first visit.\n"
+                         "• Theme Toggler: Polished rotating Sun/Moon button animation in the primary header."
                 },
                 {
-                    "heading": "Core System Capabilities",
-                    "text": "• Compliance Auditing: Ingests logins, permission modifications, and file queries.\n"
-                           "• Attendance Analytics: Computes arrival, exit, and connection durations via webhooks.\n"
-                           "• Reports Compiler: Parametric config engine committing report hashes to blockchain.\n"
-                           "• SOC Threat Center: Monitors credential logs and quarantines malicious IP addresses.\n"
-                           "• Memory Query: Role-based historic searches powered by PostgreSQL GIN indexes."
+                    "heading": "Premium Aesthetics",
+                    "text": "• Colors: Deep dark navy background (#0A0F1D) in dark mode, white/slate slate (#F8FAFC) in light mode.\n"
+                         "• Glassmorphism: Cards feature glass-filtered backdrops with subtle border details.\n"
+                         "• Micro-Animations: Modal fade-ins, card scaling, and warning pulse glow states."
                 }
             ]
         },
-        # Slide 3: M6 Inter-Module Integrations
+        # Slide 3: Authentication & MFA (Module 1)
         {
-            "title": "Inter-Module Integration Interfaces",
+            "title": "Module 1: Authentication & MFA Gate",
             "sections": [
                 {
-                    "heading": "Inbound Integrations (M1, M2, M3, M5)",
-                    "text": "• Module M1 (Auth): Transmits user login metadata, client IPs, and active session roles.\n"
-                           "• Module M2 (Meetings): Jitsi webhook integration pushes join/leave connection signals.\n"
-                           "• Module M3 (Files): Ingests audits on document downloads and access updates.\n"
-                           "• Module M5 (AI): Automatically maps summarized transcripts to memory indices."
+                    "heading": "Multi-Factor Authentication Flow",
+                    "text": "• Username/Password Validation: Primary login credentials check (admin_aicte / password123).\n"
+                         "• Passcode Toggle: Toggles visibility of the secure password access key.\n"
+                         "• OTP Dialog: Displays 6-digit dynamic authenticator (TOTP) passcode prompt."
                 },
                 {
-                    "heading": "Outbound Integrity Checks (M4)",
-                    "text": "• Module M4 (Ledger): Commits SHA-256 report integrity checksum hashes directly to private blockchain blocks, retrieving verification seals (hashes) to ensure document tamper-resistance."
+                    "heading": "Session Security Control",
+                    "text": "• Access Token Sign-out: Dropdown in header terminates sessions and clears memory states.\n"
+                         "• RBAC Access: Displays officer credential badges based on role-based access control."
                 }
             ]
         },
-        # Slide 4: React + Vite Frontend
+        # Slide 4: Meetings & Jitsi WebRTC (Module 2)
         {
-            "title": "Topic: React + Vite Frontend Architecture",
+            "title": "Module 2: Council Meetings & Jitsi Meet",
             "sections": [
                 {
-                    "heading": "UI Components & Layout Routing",
-                    "text": "• Single Page Application (SPA): Configured with React 19 and Vite for rapid loading.\n"
-                           "• Sidebar State Routing: Coordinated tabs navigate sections without page reloads.\n"
-                           "• Tailwind CSS v4: Enforces government-themed slate dark palette directly in CSS stylesheets.\n"
-                           "• Presenter Controller: Floating overlay panel programmatically updates React states to demo specific walkthrough features."
+                    "heading": "WebRTC Video Conferencing",
+                    "text": "• Jitsi External API: Dynamically fetches external_api.js script to mount active conference iframes.\n"
+                         "• Audio/Video Hardware Toggle: Custom controls in room control bar interface."
                 },
                 {
-                    "heading": "Data Visualization & States",
-                    "text": "• Recharts integration: Renders LineCharts for attendance trends and PieCharts for warning levels.\n"
-                           "• Shared Context: Coordinates notification unread badge counts in header alerts.\n"
-                           "• Interactive SOC Panels: Triggers alert drawers that mutate states to resolve threat indicators."
+                    "heading": "Governance Scheduling",
+                    "text": "• Schedule Modal: Configures meeting details with a security sensitivity level picker (Low to Top Secret).\n"
+                         "• Security Badge: Displays active E2EE encryption status in meeting rooms."
                 }
             ]
         },
-        # Slide 5: Node.js + Express Backend
+        # Slide 5: Meeting Recordings Archive (Module 2/3)
         {
-            "title": "Topic: Node.js + Express Backend API Layer",
+            "title": "Module 2/3: Secure Video Archive Portal",
             "sections": [
                 {
-                    "heading": "Express API Architecture",
-                    "text": "• REST API Endpoints: Exposes routes for audit streams, attendance updates, PDF report compilation, and search queries.\n"
-                           "• Middleware Configuration: CORS filters, JSON body-parsing middleware, and security header checks.\n"
-                           "• In-Memory Fallback: Stores database records in local arrays if PostgreSQL node connection is offline."
+                    "heading": "Interactive Media Player",
+                    "text": "• Custom Controls: Features custom Play, Pause, Time Seek bar, and Volume controls.\n"
+                         "• Object URL Ingestion: Enables dragging and dropping MP4/WebM recordings to play them locally."
                 },
                 {
-                    "heading": "Compliance Auditing Hooks",
-                    "text": "• Operations Actions: System operations (like report generating) trigger background logging checks.\n"
-                           "• JSON Payload Handling: Validates date ranges and query keywords, returning status codes (e.g. 201 Created)."
+                    "heading": "Audit Trails & Watermarks",
+                    "text": "• Security Overlay: Watermarks confidentiality text with user credentials and timestamp.\n"
+                         "• Integrity Seal: Displays SHA-256 hashes and access clearance role listings."
                 }
             ]
         },
-        # Slide 6: PostgreSQL Database Schema
+        # Slide 6: Secure S3 Document Vault (Module 3)
         {
-            "title": "Topic: PostgreSQL Relational Database Schema",
+            "title": "Module 3: Secure S3 File Management",
             "sections": [
                 {
-                    "heading": "Relational Tables Structure",
-                    "text": "• audit_logs: Logs timestamps, actions, targets, client IPs, statuses, and severities.\n"
-                           "• attendance: Tracks meeting participant logs, computing total minutes and status tags.\n"
-                           "• compliance_reports: Stores report configurations and blockchain ledger hashes.\n"
-                           "• notifications: Manages priority-based alarms (LOW, MEDIUM, HIGH, CRITICAL)."
+                    "heading": "Secure Upload System",
+                    "text": "• Drag & Drop Zone: Drag PDF reports or Excel sheets to trigger upload sequence animations.\n"
+                         "• File Validation: Check size restrictions (max 20MB) and formats before hashing."
                 },
                 {
-                    "heading": "Data Integrity & Relationships",
-                    "text": "• Cascade Deletions: Implements foreign key constraints linking M6 tables directly with users (M1) and meetings (M2).\n"
-                           "• Check Constraints: Restricts statuses to designated pools (Present, Late, Absent, Left Early; INFO, WARNING, CRITICAL) to prevent invalid logs."
+                    "heading": "Storage Audits & Metadata",
+                    "text": "• S3 Indicators: Displays live MinIO/S3 cluster status.\n"
+                         "• File Clearance Inspector: View AES-256 encryption tags, SHA-256 hashes, and version counts."
                 }
             ]
         },
-        # Slide 7: pgvector vs PostgreSQL FTS
+        # Slide 7: Blockchain Verification (Module 4)
         {
-            "title": "Topic: pgvector vs. PostgreSQL FTS",
+            "title": "Module 4: Blockchain Ledger Verification",
             "sections": [
                 {
-                    "heading": "PostgreSQL Full-Text Search (FTS)",
-                    "text": "• English Lexeme parsing: Pre-calculates a single 'search_vector' (tsvector type) and indexes it using a GIN (Inverted Index) layout.\n"
-                           "• ts_rank ranking: relevance ranks search terms based on keyword match density.\n"
-                           "• GIN index updates: Keeps lexeme database synchronized via trigger functions."
+                    "heading": "Integrity Check Terminal",
+                    "text": "• SHA-256 Verifier: Paste file hashes to query the blockchain registry.\n"
+                         "• Integrity Statuses: Green verified organizational badge or Red compromised warning panels."
                 },
                 {
-                    "heading": "PostgreSQL pgvector Embeddings",
-                    "text": "• Embedding Columns: Stores document representations as vector columns (e.g. vector(1536)).\n"
-                           "• HNSW Indexing: Speeds up cosine distance queries (<=>) across multi-dimensional embedding weights.\n"
-                           "• Context Search: Resolves query semantics rather than exact keyword spelling."
+                    "heading": "Fabric Block Explorer",
+                    "text": "• Visual Timelines: Displays newly committed ledger blocks.\n"
+                         "• Metadata: Tracks transaction IDs, channels, block heights, and anchoring stamps."
                 }
             ]
         },
-        # Slide 8: Attendance & SOC Mechanics
+        # Slide 8: AI Meeting Intelligence (Module 5)
         {
-            "title": "Attendance & SOC Security Alarms",
+            "title": "Module 5: AI Meeting Intelligence Engine",
             "sections": [
                 {
-                    "heading": "Attendance Duration Analytics",
-                    "text": "Integrates Jitsi webhooks to record user connecting and leaving events. Calculates duration: Duration = Leave Time - Join Time (expressed in minutes).\n"
-                           "Assigns status badges: Present, Late (>5m post start), Left Early, or Absent."
+                    "heading": "AI Transcripts & Summarization",
+                    "text": "• Speaker Tagged Feed: Automatically splits spoken dialogue with exact timestamps.\n"
+                         "• MoM Minutes: Compiles goals summaries, approvals, and decisions list."
                 },
                 {
-                    "heading": "SOC Automated Mitigation Protocols",
-                    "text": "• IP Quarantine: Blocks client IPs if 5 failed login attempts occur in 2 minutes.\n"
-                           "• Verification Modal: Compliance officers inspect logs and resolve alerts directly from UI."
+                    "heading": "Human Sign-off Workflow",
+                    "text": "• Review Portal: Action items list tracks assignees, deadlines, and progress states.\n"
+                         "• Sign-off Steps: Transitions records through three states (AI-Generated ➔ Human Approved ➔ Final Commit)."
                 }
             ]
         },
-        # Slide 9: Reports Engine & Blockchain Sealing
+        # Slide 9: Audit Logs & Attendance Tracker (Module 6)
         {
-            "title": "Reports Engine & Blockchain Sealing",
+            "title": "Module 6: Compliance Auditing & Attendance",
             "sections": [
                 {
-                    "heading": "Compliance PDF Builder",
-                    "text": "Retrieves logs for chosen meetings and date boundaries. Renders a simulated compliance PDF directly inside the browser, containing official headers, summary blocks, and verify signatures."
+                    "heading": "Attendance Duration Logs",
+                    "text": "• Jitsi Webhooks: Captures user connect/disconnect timestamps.\n"
+                         "• Duration Formula: Computes total minutes, flagging Late and Left Early parameters."
                 },
                 {
-                    "heading": "Blockchain Integrity Lock (M4 Integration)",
-                    "text": "M6 hashes the report file payload using SHA-256. This hash is committed to the blockchain, creating a read-only token seal. Anyone altering the database later fails verification checks."
+                    "heading": "System Activity Auditing",
+                    "text": "• M6 Ledger: Logs user actions, modules, origins, IP, and severities.\n"
+                         "• SOC Alarms: Quarantines threat origins and prompts mitigation actions."
                 }
             ]
         },
-        # Slide 10: Conclusion & Deliverables
+        # Slide 10: Stack & Widescreen Deliverables
         {
-            "title": "M6 Prototype Stack & Deliverables",
+            "title": "Widescreen Prototype Architecture",
             "sections": [
                 {
-                    "heading": "Visual Front-End Prototype",
-                    "text": "React + Vite frontend dev stack. Uses a premium dark-navy theme (#0A0F1D), glassmorphism styles, Recharts analytics, and Lucide icons."
+                    "heading": "Front-End UI Deliverables",
+                    "text": "React + Vite widescreen framework. Widescreen widescreen layout (16:9 widescreen layout), Tailwind CSS v4 design system, and Lucide vector icons."
                 },
                 {
-                    "heading": "Backend API & Database Schemas",
-                    "text": "Express API server with mock databases. Features a floating Demo Controller walkthrough bar. PostgreSQL schema scripts including FTS search vectors."
+                    "heading": "Mock Server API & Databases",
+                    "text": "Express API server with mock databases. Client-side state fallback coordinates operations offline. Linked GitHub codebase and live Vercel cloud deploy."
                 }
             ]
         }
@@ -242,7 +237,7 @@ def generate_detailed_pptx():
             
             p_l_b = tf_l.add_paragraph()
             p_l_b.text = sec1["text"]
-            p_l_b.font.size = Pt(15)
+            p_l_b.font.size = Pt(14)
             p_l_b.font.color.rgb = c_body
             p_l_b.font.name = 'Arial'
             p_l_b.line_spacing = 1.2
@@ -262,7 +257,7 @@ def generate_detailed_pptx():
             
             p_r_b = tf_r.add_paragraph()
             p_r_b.text = sec2["text"]
-            p_r_b.font.size = Pt(15)
+            p_r_b.font.size = Pt(14)
             p_r_b.font.color.rgb = c_body
             p_r_b.font.name = 'Arial'
             p_r_b.line_spacing = 1.2
@@ -277,7 +272,7 @@ def generate_detailed_pptx():
             p_f.font.name = 'Arial'
 
     prs.save("AICTE_M6_Presentation_Detailed.pptx")
-    print("Exhaustive detailed PowerPoint updated successfully as 'AICTE_M6_Presentation_Detailed.pptx'")
+    print("Overhauled PowerPoint updated successfully as 'AICTE_M6_Presentation_Detailed.pptx'")
 
 if __name__ == "__main__":
     generate_detailed_pptx()
