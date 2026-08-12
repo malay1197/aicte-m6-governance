@@ -44,7 +44,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
 
   const fetchMeetingsList = async () => {
     try {
-      const list = await api.getAttendance();
+      const list = await api.getAttendance(user);
       setMeetings(list);
       // Auto select the first meeting if none is selected
       if (list.length > 0 && !selectMeetingId) {

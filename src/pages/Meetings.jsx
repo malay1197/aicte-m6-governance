@@ -80,7 +80,7 @@ export default function Meetings({ user }) {
 
   const fetchMeetings = async () => {
     try {
-      const allMeetings = await api.getAttendance(); // Fetch from server
+      const allMeetings = await api.getAttendance(user); // Fetch from server
       setMeetings(allMeetings);
       
       // Auto-join meeting if meetingId query parameter is present

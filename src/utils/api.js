@@ -33,10 +33,13 @@ export const api = {
   },
 
   // 2. GET /api/attendance
-  async getAttendance() {
+  async getAttendance(credentials) {
     try {
+      const authVal = credentials 
+        ? `Bearer ${credentials.username}:${credentials.role}` 
+        : AUTH_HEADER_VALUE;
       const res = await fetch(`${BASE_URL}/attendance`, {
-        headers: { 'Authorization': AUTH_HEADER_VALUE }
+        headers: { 'Authorization': authVal }
       });
       if (res.ok) return await res.json();
     } catch (e) {
