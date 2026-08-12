@@ -197,5 +197,82 @@ export const api = {
     });
 
     return { success: true };
+  },
+
+  async analyzeTranscript(transcript) {
+    const key = localStorage.getItem('gemini_api_key');
+    
+    // 1. Attempt to use backend AI api first
+    try {
+      const res = await fetch(`${BASE_URL}/ai/analyze-transcript`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': AUTH_HEADER_VALUE,
+          'x-gemini-key': key || ''
+        },
+        body: JSON.stringify({ transcript })
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn("Backend offline. Executing direct client-side Gemini analysis fallback.");
+    }
+
+    // 2. Client-side direct fallback if backend is offline/Vercel host
+    if (!key) {
+      throw new Error("Gemini API Key is missing. Please add your key in the configurations panel (Settings tab).");
+    }
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: `You are an expert AI Compliance Officer for the All India Council for Technical Education (AICTE). 
+Analyze the following meeting transcript. Generate an executive summary of the meeting goals, list all approved governance decisions, and compile a compliance action items list.
+
+Transcript:
+"${transcript}"
+
+You must respond with a JSON object formatted EXACTLY as shown below:
+{
+  "goalSummary": "A concise paragraph summarizing the meeting purpose, discussions, and goals.",
+  "decisions": [
+    "Decision sentence 1",
+    "Decision sentence 2"
+  ],
+  "actionItems": [
+    {
+      "task": "Task description details",
+      "assignee": "Name of official assigned to the task",
+      "deadline": "Deadline date (e.g. Aug 22, 2026)"
+    }
+  ]
+}
+
+Return ONLY raw JSON. Do not write any markdown code blocks, backticks, or formatting text around the JSON.`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`Gemini Direct API Error: ${errBody}`);
+    }
+
+    const data = await response.json();
+    const resultText = data.candidates[0].content.parts[0].text;
+    return JSON.parse(resultText.trim());
   }
 };

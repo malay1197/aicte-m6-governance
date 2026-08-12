@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Settings as SettingsIcon, 
   RefreshCw, 
@@ -11,6 +11,21 @@ import {
 } from 'lucide-react';
 
 export default function Settings() {
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSaveKey = () => {
+    localStorage.setItem('gemini_api_key', geminiKey.trim());
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleClearKey = () => {
+    localStorage.removeItem('gemini_api_key');
+    setGeminiKey('');
+    alert('Gemini API key has been removed.');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       
@@ -66,6 +81,48 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Gemini API Configurations Card */}
+      <div className="gov-card space-y-4">
+        <div className="flex items-center gap-3">
+          <Cpu className="w-5 h-5 text-gov-primaryLight" />
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-gov-text">Gemini AI Engine Integration</h3>
+        </div>
+        <p className="text-xs text-gov-muted">
+          Provide your Google Gemini API Key to enable real-time transcript analysis, decision compiling, and auto-generated meeting minutes. The key is stored securely in your browser's local storage and is never saved on external servers.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 items-end max-w-2xl">
+          <div className="flex-1 space-y-1 w-full">
+            <label className="text-[10px] text-gov-muted font-bold uppercase tracking-wider block">Gemini API Key</label>
+            <input
+              type="password"
+              value={geminiKey}
+              onChange={(e) => setGeminiKey(e.target.value)}
+              className="w-full px-4 py-2 bg-gov-dark border border-gov-border rounded-lg text-xs text-gov-text focus:outline-none focus:border-gov-primary transition font-medium"
+              placeholder="AIzaSy..."
+            />
+          </div>
+          <button
+            onClick={handleSaveKey}
+            className="px-5 py-2.5 bg-gov-primary text-white hover:bg-opacity-90 rounded-lg text-xs font-bold transition shadow-glow-primary cursor-pointer shrink-0"
+          >
+            Save Configuration
+          </button>
+          {localStorage.getItem('gemini_api_key') && (
+            <button
+              onClick={handleClearKey}
+              className="px-4 py-2.5 bg-gov-border hover:bg-slate-300 dark:hover:bg-slate-700 text-gov-muted hover:text-gov-text rounded-lg text-xs font-bold transition cursor-pointer shrink-0"
+            >
+              Clear Key
+            </button>
+          )}
+        </div>
+        {saveSuccess && (
+          <p className="text-[10px] text-gov-success font-semibold flex items-center gap-1">
+            <CheckCircle className="w-3.5 h-3.5" /> API key configured successfully! Real-time transcription summaries are now enabled.
+          </p>
+        )}
+      </div>
+
       {/* Retention policies & Security configuration */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
@@ -98,25 +155,22 @@ export default function Settings() {
           <div className="space-y-4 text-xs text-gov-muted">
             <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
               <span>Active Compliance Officer ID</span>
-              <span className="text-gov-text font-mono font-bold">admin_aicte</span>
+              <span className="text-gov-text font-bold">admin_aicte</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
-              <span>Security Access Key Fingerprint</span>
-              <span className="text-gov-text font-mono">ED25519-8b43f9a7...10bc</span>
+              <span>Security Clearance Level</span>
+              <span className="text-gov-text font-bold">Level-5 (Top Secret)</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
-              <span>MFA Encryption Protocol</span>
-              <span className="text-gov-text font-bold">AES-256-GCM / TOTP</span>
+              <span>Primary Node Node Sync IP</span>
+              <span className="text-gov-text font-bold font-mono">10.82.3.153</span>
             </div>
             <div className="flex justify-between items-center py-2">
-              <span>Gateway Node Integrity</span>
-              <span className="text-gov-success font-semibold flex items-center gap-1">
-                <CheckCircle className="w-3.5 h-3.5" /> SECURE MATCH
-              </span>
+              <span>Authorized RBAC Role</span>
+              <span className="text-gov-text font-bold">Compliance Supervisor</span>
             </div>
           </div>
         </div>
-
       </div>
 
     </div>
