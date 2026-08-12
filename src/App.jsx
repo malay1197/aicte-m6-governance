@@ -25,9 +25,7 @@ export default function App() {
   // Global states
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return systemPrefersDark ? 'dark' : 'light';
+    return saved ? saved : 'light';
   });
 
   const [user, setUser] = useState(() => {
