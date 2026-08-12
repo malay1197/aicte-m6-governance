@@ -71,6 +71,14 @@ export default function Login({ onLoginSuccess }) {
             email: 'rahul.patel@sih.gov.in',
             authenticatedAt: new Date().toISOString()
           });
+        } else if (u === 'student_priya') {
+          onLoginSuccess({
+            username: 'student_priya',
+            role: 'Student',
+            name: 'Priya Sharma',
+            email: 'priya.sharma@sih.gov.in',
+            authenticatedAt: new Date().toISOString()
+          });
         } else {
           onLoginSuccess({
             username: 'admin_aicte',
@@ -170,7 +178,7 @@ export default function Login({ onLoginSuccess }) {
               <span>AUTHENTICATE CREDENTIALS</span>
             </button>
             <p className="text-[10px] text-gov-muted text-center leading-relaxed">
-              Default credentials: <span className="font-semibold text-gov-primaryLight">admin_aicte</span> (Officer) or <span className="font-semibold text-gov-primaryLight">student_rahul</span> (Student) & <span className="font-semibold text-gov-primaryLight">password123</span>
+              Predefined credentials: <span className="font-semibold text-gov-primaryLight">admin_aicte</span> (Host), <span className="font-semibold text-gov-primaryLight">student_rahul</span> (Student 1), or <span className="font-semibold text-gov-primaryLight">student_priya</span> (Student 2) & Password <span className="font-semibold text-gov-primaryLight">password123</span>
             </p>
           </form>
         ) : (
