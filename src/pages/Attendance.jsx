@@ -300,6 +300,8 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                 <th className="py-4 px-6">Participant</th>
                 <th className="py-4 px-6">Role</th>
                 <th className="py-4 px-6 text-center">Status</th>
+                <th className="py-4 px-6 text-center">Join Sessions</th>
+                <th className="py-4 px-6 text-right">Current Session</th>
                 <th className="py-4 px-6 cursor-pointer select-none" onClick={toggleSort}>
                   <div className="flex items-center gap-1 justify-end">
                     <span>Total Time</span>
@@ -307,7 +309,6 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                   </div>
                 </th>
                 <th className="py-4 px-6 text-right">Attendance %</th>
-                <th className="py-4 px-6 text-center">Join Sessions</th>
                 <th className="py-4 px-6 text-center">Action</th>
               </tr>
             </thead>
@@ -316,6 +317,16 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                 sortedList.map((student) => {
                   const liveSecs = getLiveDurationSeconds(student);
                   const pct = Math.min(100, Math.round((liveSecs / (meetingDurationMinutes * 60)) * 100));
+                  
+                  let currentSessionDuration = '—';
+                  if (student.status === 'Online' && student.sessions) {
+                    const activeSess = student.sessions.find(s => s.status === 'Active');
+                    if (activeSess) {
+                      const curSecs = Math.max(0, Math.floor((Date.now() - new Date(activeSess.joinTime)) / 1000));
+                      currentSessionDuration = formatSeconds(curSecs);
+                    }
+                  }
+
                   return (
                     <tr key={student.userId} className="hover:bg-gov-dark/20 transition-colors">
                       <td className="py-4 px-6 font-semibold text-gov-text">{student.name}</td>
@@ -325,14 +336,17 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                           {student.status}
                         </span>
                       </td>
+                      <td className="py-4 px-6 text-center font-semibold text-gov-muted">
+                        {student.sessionsCount} sessions
+                      </td>
+                      <td className="py-4 px-6 text-right font-mono font-semibold text-gov-success">
+                        {currentSessionDuration}
+                      </td>
                       <td className="py-4 px-6 text-right font-mono font-semibold text-gov-primaryLight">
                         {formatSeconds(liveSecs)}
                       </td>
                       <td className="py-4 px-6 text-right font-bold text-gov-text">
                         {pct}%
-                      </td>
-                      <td className="py-4 px-6 text-center font-semibold text-gov-muted">
-                        {student.sessionsCount} sessions
                       </td>
                       <td className="py-4 px-6 text-center">
                         <button
