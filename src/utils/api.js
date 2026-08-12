@@ -7,7 +7,10 @@ const BASE_URL = 'http://localhost:5000/api';
 const AUTH_HEADER_VALUE = 'Bearer admin_aicte:Admin';
 
 // Local fallbacks in case the backend server goes completely offline
-let localMeetings = [...mock.mockMeetings];
+let localMeetings = (() => {
+  const saved = localStorage.getItem('local_meetings');
+  return saved ? JSON.parse(saved) : [...mock.mockMeetings];
+})();
 let localAuditLogs = [...mock.mockAuditLogs];
 let localSecurityEvents = [...mock.mockSecurityEvents];
 let localNotifications = [...mock.mockNotifications];
@@ -577,5 +580,31 @@ Return ONLY raw JSON. Do not write any markdown code blocks, backticks, or forma
     });
     localStorage.setItem('local_attendance_sessions', JSON.stringify(localSess));
     return { success: true };
+  },
+
+  async createMeeting(meeting, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authVal
+        },
+        body: JSON.stringify(meeting)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        localMeetings.unshift(created.meeting || created);
+        localStorage.setItem('local_meetings', JSON.stringify(localMeetings));
+        return created;
+      }
+    } catch (e) {
+      console.warn("Backend offline. Simulating createMeeting locally.");
+    }
+    
+    localMeetings.unshift(meeting);
+    localStorage.setItem('local_meetings', JSON.stringify(localMeetings));
+    return { success: true, meeting };
   }
 };

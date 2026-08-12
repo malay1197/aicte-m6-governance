@@ -1442,6 +1442,60 @@ const db = {
       WHERE meeting_id = $1 AND status = 'Active'
     `, [meetingId]);
     return { success: true };
+  },
+
+  async createMeeting(m) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('meetings')
+          .insert({
+            id: m.id,
+            title: m.name,
+            scheduled_start: new Date(`${m.date} ${m.startTime}`).toISOString(),
+            scheduled_end: new Date(`${m.date} ${m.endTime}`).toISOString(),
+            status: m.status || 'Scheduled',
+            description: m.description || '',
+            room_name: `AICTE-Sec-Governance-Room-${m.id}`,
+            created_by: m.createdBy || 'admin_aicte'
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase createMeeting failed:', err);
+      }
+    }
+
+    if (useFallback) {
+      const data = readLocalFile();
+      data.meetings.unshift({
+        ...m,
+        roomName: `AICTE-Sec-Governance-Room-${m.id}`,
+        participants: m.participants || []
+      });
+      writeLocalFile(data);
+      return m;
+    }
+
+    const q = `
+      INSERT INTO meetings (id, title, scheduled_start, scheduled_end, status, description, room_name, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+    `;
+    const startStr = new Date(`${m.date} ${m.startTime}`).toISOString();
+    const endStr = new Date(`${m.date} ${m.endTime}`).toISOString();
+    const { rows } = await pgPool.query(q, [
+      m.id, 
+      m.name, 
+      startStr, 
+      endStr, 
+      m.status || 'Scheduled', 
+      m.description || '', 
+      `AICTE-Sec-Governance-Room-${m.id}`, 
+      m.createdBy || 'admin_aicte'
+    ]);
+    return rows[0];
   }
 };
 

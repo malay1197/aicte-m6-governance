@@ -24,6 +24,9 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
   const [loading, setLoading] = useState(false);
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
   const [selectedStudentForHistory, setSelectedStudentForHistory] = useState(null);
+  
+  // Real-time ticking state to force 1-second dynamic UI duration updates
+  const [tick, setTick] = useState(0);
 
   // Selected meeting logic
   const selectedMeeting = mockMeetings.find(m => m.id === selectMeetingId) || mockMeetings[0];
@@ -32,10 +35,18 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
   useEffect(() => {
     fetchLogs();
     
-    // Near real-time updates: poll logs every 5 seconds
-    const interval = setInterval(fetchLogs, 5000);
+    // Near real-time updates: poll logs every 2 seconds
+    const interval = setInterval(fetchLogs, 2000);
     return () => clearInterval(interval);
   }, [selectMeetingId]);
+
+  // Dynamic counting updates every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchLogs = async () => {
     try {
@@ -72,6 +83,20 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return result;
   };
 
+  // Helper to calculate live ticking seconds for online participants
+  const getLiveDurationSeconds = (student) => {
+    let secs = student.totalDurationSeconds || 0;
+    if (student.status === 'Online' && student.sessions) {
+      const activeSess = student.sessions.find(s => s.status === 'Active');
+      if (activeSess) {
+        const joinTime = new Date(activeSess.joinTime);
+        const liveSecs = Math.max(0, Math.floor((Date.now() - joinTime) / 1000));
+        secs += liveSecs;
+      }
+    }
+    return secs;
+  };
+
   // Determine meeting target duration in minutes
   const meetingDurationMinutes = selectedMeeting.id === 'meet-001' ? 90 : 150;
 
@@ -87,11 +112,13 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return matchesSearch && matchesStatus;
   });
 
-  // Sort logic (by total duration)
+  // Sort logic (by live ticking duration)
   const sortedList = [...filteredList].sort((a, b) => {
+    const durA = getLiveDurationSeconds(a);
+    const durB = getLiveDurationSeconds(b);
     return sortDirection === 'asc' 
-      ? a.totalDurationSeconds - b.totalDurationSeconds
-      : b.totalDurationSeconds - a.totalDurationSeconds;
+      ? durA - durB
+      : durB - durA;
   });
 
   const toggleSort = () => {
@@ -108,7 +135,8 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
   
   const avgAttendancePct = attendanceList.length > 0
     ? Math.round(attendanceList.reduce((acc, curr) => {
-        const pct = Math.min(100, Math.round((curr.totalDurationSeconds / (meetingDurationMinutes * 60)) * 100));
+        const liveSecs = getLiveDurationSeconds(curr);
+        const pct = Math.min(100, Math.round((liveSecs / (meetingDurationMinutes * 60)) * 100));
         return acc + pct;
       }, 0) / attendanceList.length)
     : 0;
@@ -264,7 +292,8 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
             <tbody className="divide-y divide-gov-border/30">
               {sortedList.length > 0 ? (
                 sortedList.map((student) => {
-                  const pct = Math.min(100, Math.round((student.totalDurationSeconds / (meetingDurationMinutes * 60)) * 100));
+                  const liveSecs = getLiveDurationSeconds(student);
+                  const pct = Math.min(100, Math.round((liveSecs / (meetingDurationMinutes * 60)) * 100));
                   return (
                     <tr key={student.userId} className="hover:bg-gov-dark/20 transition-colors">
                       <td className="py-4 px-6 font-semibold text-gov-text">{student.name}</td>
@@ -275,7 +304,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right font-mono font-semibold text-gov-primaryLight">
-                        {formatSeconds(student.totalDurationSeconds)}
+                        {formatSeconds(liveSecs)}
                       </td>
                       <td className="py-4 px-6 text-right font-bold text-gov-text">
                         {pct}%
@@ -332,7 +361,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                 <div>
                   <span className="text-gov-muted block uppercase font-bold text-[9px]">Total Time</span>
                   <span className="text-md font-bold text-gov-primaryLight">
-                    {formatSeconds(selectedStudentForHistory.totalDurationSeconds)}
+                    {formatSeconds(getLiveDurationSeconds(selectedStudentForHistory))}
                   </span>
                 </div>
                 <div>
@@ -345,21 +374,27 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
 
               <div className="space-y-2">
                 {selectedStudentForHistory.sessions && selectedStudentForHistory.sessions.length > 0 ? (
-                  selectedStudentForHistory.sessions.map((sess, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-xs p-3 bg-gov-dark border border-gov-border rounded">
-                      <div>
-                        <span className="font-bold text-gov-text">Session {selectedStudentForHistory.sessions.length - idx}</span>
-                        <p className="text-[10px] text-gov-muted mt-0.5 font-mono">
-                          Join: {new Date(sess.joinTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                          <br />
-                          Leave: {sess.leaveTime ? new Date(sess.leaveTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Active...'}
-                        </p>
+                  selectedStudentForHistory.sessions.map((sess, idx) => {
+                    let duration = sess.durationSeconds || 0;
+                    if (sess.status === 'Active') {
+                      duration = Math.max(0, Math.floor((Date.now() - new Date(sess.joinTime)) / 1000));
+                    }
+                    return (
+                      <div key={idx} className="flex justify-between items-center text-xs p-3 bg-gov-dark border border-gov-border rounded">
+                        <div>
+                          <span className="font-bold text-gov-text">Session {selectedStudentForHistory.sessions.length - idx}</span>
+                          <p className="text-[10px] text-gov-muted mt-0.5 font-mono">
+                            Join: {new Date(sess.joinTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            <br />
+                            Leave: {sess.leaveTime ? new Date(sess.leaveTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Active...'}
+                          </p>
+                        </div>
+                        <span className="font-bold text-gov-primaryLight font-mono">
+                          {formatSeconds(duration)}
+                        </span>
                       </div>
-                      <span className="font-bold text-gov-primaryLight font-mono">
-                        {formatSeconds(sess.durationSeconds)}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-xs text-gov-muted italic text-center py-4">No sessions logged.</p>
                 )}

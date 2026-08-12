@@ -114,4 +114,16 @@ router.post('/:meetingId/end', authMiddleware, async (req, res) => {
   }
 });
 
+// 8. POST /api/meetings/
+router.post('/', authMiddleware, async (req, res) => {
+  const meeting = req.body;
+  meeting.createdBy = req.user.username;
+  try {
+    const created = await db.createMeeting(meeting);
+    res.json({ success: true, meeting: created });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create meeting', message: err.message });
+  }
+});
+
 module.exports = router;

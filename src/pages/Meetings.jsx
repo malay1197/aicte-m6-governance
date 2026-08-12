@@ -65,6 +65,14 @@ export default function Meetings({ user }) {
   const currentSessionIdRef = useRef(null);
   const heartbeatIntervalRef = useRef(null);
 
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTick(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Load meetings on component mount
   useEffect(() => {
     fetchMeetings();
@@ -289,30 +297,31 @@ export default function Meetings({ user }) {
 
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
+    const meetingUuid = crypto.randomUUID();
     const newMeeting = {
-      id: `meet-${Date.now()}`,
+      id: meetingUuid,
       name: title,
       date,
       startTime,
       endTime,
-      totalParticipants: 4,
+      totalParticipants: 0,
       present: 0,
       absent: 0,
       late: 0,
       status: 'Scheduled',
       sensitivity,
-      participants: [
-        { id: user ? user.username : 'admin_aicte', name: user ? user.name : 'Dr. Abhay Jere', role: user ? user.role : 'System Admin', status: 'Present' }
-      ]
+      description: agenda,
+      participants: []
     };
 
     try {
+      await api.createMeeting(newMeeting, user || { username: 'admin_aicte', role: 'Admin' });
       await api.generateReport('Meeting Created', newMeeting.id, newMeeting.date);
     } catch(err) {
-      console.warn("Audit logging failed on meeting create");
+      console.warn("Saving scheduled meeting failed, falling back.", err);
     }
 
-    setMeetings([newMeeting, ...meetings]);
+    await fetchMeetings();
     setShowScheduleModal(false);
     
     // Reset Form Fields
@@ -385,9 +394,21 @@ export default function Meetings({ user }) {
     const activeMeetId = selectedMeetingForStats ? selectedMeetingForStats.id : null;
     const activeStats = activeMeetId ? studentAttendance[activeMeetId] : null;
     
+    let liveDurationSeconds = 0;
+    if (activeStats) {
+      liveDurationSeconds = activeStats.totalDurationSeconds || 0;
+      if (activeStats.status === 'Online' && activeStats.sessions) {
+        const activeSess = activeStats.sessions.find(s => s.status === 'Active');
+        if (activeSess) {
+          const liveAdditional = Math.max(0, Math.floor((Date.now() - new Date(activeSess.joinTime)) / 1000));
+          liveDurationSeconds += liveAdditional;
+        }
+      }
+    }
+
     const meetingDurationMinutes = 60;
     const attendancePercentage = activeStats 
-      ? Math.min(100, Math.round((activeStats.totalDurationSeconds / (meetingDurationMinutes * 60)) * 100))
+      ? Math.min(100, Math.round((liveDurationSeconds / (meetingDurationMinutes * 60)) * 100))
       : 0;
 
     return (
@@ -526,7 +547,7 @@ export default function Meetings({ user }) {
                     <div className="bg-gov-dark p-3 rounded-lg border border-gov-border text-center">
                       <span className="text-[10px] text-gov-muted block font-semibold uppercase">Total Attendance</span>
                       <span className="text-md font-bold text-gov-primaryLight mt-1 block">
-                        {activeStats ? formatSeconds(activeStats.totalDurationSeconds) : '0 sec'}
+                        {activeStats ? formatSeconds(liveDurationSeconds) : '0 sec'}
                       </span>
                     </div>
 
