@@ -92,18 +92,36 @@ app.patch('/api/security-events/:id/resolve', authMiddleware, authorizeRoles('Ad
   }
 });
 
-// Boot Setup & Connect Database
-db.init().then(() => {
-  app.listen(PORT, () => {
-    console.log(`M6 secure governance service is running on port ${PORT}`);
-  });
-
-  // Clean up orphaned active attendance sessions (e.g., if a user crashed/disconnected)
-  setInterval(async () => {
+// Middleware to ensure database is initialized in serverless environments
+let isDbInit = false;
+app.use(async (req, res, next) => {
+  if (!isDbInit) {
     try {
-      await db.sweepOrphanedSessions();
+      await db.init();
+      isDbInit = true;
     } catch (err) {
-      console.error('Failed to sweep active sessions:', err);
+      console.error('Database initialization middleware failed:', err);
     }
-  }, 30000);
+  }
+  next();
 });
+
+// Boot Setup & Connect Database for local development
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+  db.init().then(() => {
+    app.listen(PORT, () => {
+      console.log(`M6 secure governance service is running on port ${PORT}`);
+    });
+
+    // Clean up orphaned active attendance sessions (every 30 seconds)
+    setInterval(async () => {
+      try {
+        await db.sweepOrphanedSessions();
+      } catch (err) {
+        console.error('Failed to sweep active sessions:', err);
+      }
+    }, 30000);
+  });
+}
+
+module.exports = app;

@@ -1,7 +1,9 @@
 // AICTE Security & Governance Platform - M6 API Client with M1 RBAC headers
 import * as mock from './mockData';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+  ? `${window.location.origin}/api`
+  : 'http://localhost:5000/api';
 
 // Enforce Mock credentials representing synced M1 context
 const AUTH_HEADER_VALUE = 'Bearer admin_aicte:Admin';
