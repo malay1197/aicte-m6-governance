@@ -209,7 +209,7 @@ export default function VideoArchive() {
             onDrop={(e) => { e.preventDefault(); setIsDragging(false); processVideoUpload(e.dataTransfer.files[0]); }}
             onClick={() => fileInputRef.current.click()}
             className={`gov-card border-dashed border-2 py-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-              isDragging ? 'border-gov-primary bg-gov-primary bg-opacity-10 scale-[1.01]' : 'border-gov-border hover:border-gov-primary hover:bg-opacity-5'
+              isDragging ? 'border-gov-primary bg-gov-primary/10 scale-[1.01]' : 'border-gov-border hover:border-gov-primary hover:bg-opacity-5'
             }`}
           >
             <input 
@@ -228,7 +228,7 @@ export default function VideoArchive() {
 
           {/* Progress loader */}
           {uploadProgress !== null && (
-            <div className="gov-card p-4 space-y-2 border border-gov-primary border-opacity-30">
+            <div className="gov-card p-4 space-y-2 border border-gov-primary/30">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-gov-primaryLight">Encrypting video stream...</span>
                 <span>{uploadProgress}%</span>
@@ -240,7 +240,7 @@ export default function VideoArchive() {
           )}
 
           {uploadError && (
-            <div className="p-3 bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-30 rounded-lg flex items-center gap-2 text-xs text-gov-danger">
+            <div className="p-3 bg-gov-danger/10 border border-gov-danger/30 rounded-lg flex items-center gap-2 text-xs text-gov-danger">
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{uploadError}</span>
             </div>
@@ -267,7 +267,7 @@ export default function VideoArchive() {
                   key={rec.id}
                   onClick={() => setSelectedRecording(rec)}
                   className={`p-3 rounded-lg border text-xs flex justify-between items-center cursor-pointer transition-all ${
-                    isSelected ? 'border-gov-primary bg-gov-primary bg-opacity-10' : 'border-gov-border hover:bg-gov-border hover:bg-opacity-20'
+                    isSelected ? 'border-gov-primary bg-gov-primary/10' : 'border-gov-border hover:bg-gov-border hover:bg-opacity-20'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate">
@@ -310,13 +310,13 @@ export default function VideoArchive() {
 
                 {/* Secure Watermark Overlay */}
                 <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none select-none z-10 opacity-35">
-                  <div className="text-[10px] font-mono font-bold text-gov-text bg-black bg-opacity-40 px-2 py-0.5 rounded self-start border border-gov-border border-opacity-30">
+                  <div className="text-[10px] font-mono font-bold text-gov-text bg-black/40 px-2 py-0.5 rounded self-start border border-gov-border/30">
                     SECURE STREAM WATERMARK - AICTE COUNCIL
                   </div>
                   <div className="text-[12px] font-mono font-bold text-gov-text tracking-widest text-center rotate-12 opacity-40">
                     CONFIDENTIAL - admin_aicte - {new Date().toLocaleDateString()}
                   </div>
-                  <div className="text-[9px] font-mono text-gov-text bg-black bg-opacity-40 px-2 py-0.5 rounded self-end border border-gov-border border-opacity-30">
+                  <div className="text-[9px] font-mono text-gov-text bg-black/40 px-2 py-0.5 rounded self-end border border-gov-border/30">
                     HASH SEAL: {selectedRecording.hash.substring(0, 16)}...
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export default function VideoArchive() {
               {/* Secure video log details */}
               <div className="gov-card grid grid-cols-1 md:grid-cols-2 gap-6 bg-opacity-40">
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-gov-text uppercase border-b border-gov-border border-opacity-35 pb-1">Cryptographic Ledger Seals</h4>
+                  <h4 className="text-xs font-bold text-gov-text uppercase border-b border-gov-border/35 pb-1">Cryptographic Ledger Seals</h4>
                   
                   <div className="space-y-3 font-mono text-[10px] text-gov-muted">
                     <div>
@@ -410,8 +410,8 @@ export default function VideoArchive() {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-gov-text uppercase border-b border-gov-border border-opacity-35 pb-1">Access Clearances</h4>
-                  <div className="p-3 bg-gov-primary bg-opacity-5 border border-gov-primary border-opacity-20 rounded-lg text-xs leading-relaxed text-gov-muted">
+                  <h4 className="text-xs font-bold text-gov-text uppercase border-b border-gov-border/35 pb-1">Access Clearances</h4>
+                  <div className="p-3 bg-gov-primary/5 border border-gov-primary/20 rounded-lg text-xs leading-relaxed text-gov-muted">
                     <p className="text-[10px]">
                       This recording remains sealed under compliance codes (M6 audit trails). Only the following authorized governance roles may access:
                     </p>

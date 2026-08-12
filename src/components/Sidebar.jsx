@@ -35,7 +35,7 @@ export default function Sidebar({ activeTab, setActiveTab, unreadCount, critical
       {isOpen && (
         <div 
           onClick={onClose}
-          className="fixed inset-0 bg-black bg-opacity-60 z-50 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/60 z-50 lg:hidden transition-opacity"
         />
       )}
 
@@ -45,7 +45,7 @@ export default function Sidebar({ activeTab, setActiveTab, unreadCount, critical
         {/* Brand Header */}
         <div className="p-6 border-b border-gov-border flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="bg-gov-primary bg-opacity-20 p-2.5 rounded-lg text-gov-primaryLight ring-1 ring-gov-primary ring-opacity-30">
+            <div className="bg-gov-primary/20 p-2.5 rounded-lg text-gov-primaryLight ring-1 ring-gov-primary ring-opacity-30">
               <Shield className="w-5 h-5" />
             </div>
             <div>
@@ -82,7 +82,7 @@ export default function Sidebar({ activeTab, setActiveTab, unreadCount, critical
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
                   isActive
-                    ? 'bg-gov-primary bg-opacity-15 text-gov-primaryLight border-l-4 border-gov-primary shadow-glow-primary'
+                    ? 'bg-gov-primary/15 text-gov-primaryLight border-l-4 border-gov-primary shadow-glow-primary'
                     : 'text-gov-muted hover:bg-gov-border hover:text-gov-text'
                 }`}
               >
@@ -104,7 +104,7 @@ export default function Sidebar({ activeTab, setActiveTab, unreadCount, critical
         </nav>
 
         {/* Footer Info */}
-        <div className="p-4 border-t border-gov-border bg-gov-dark bg-opacity-50">
+        <div className="p-4 border-t border-gov-border bg-gov-dark/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gov-secondary flex items-center justify-center text-xs font-bold text-white shadow-glow-success">
               M6

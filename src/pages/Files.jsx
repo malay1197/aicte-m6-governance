@@ -184,7 +184,7 @@ export default function Files() {
             onClick={() => fileInputRef.current.click()}
             className={`gov-card border-dashed border-2 py-10 flex flex-col items-center justify-center text-center space-y-4 cursor-pointer transition-all ${
               isDragging 
-                ? 'border-gov-primary bg-gov-primary bg-opacity-10 scale-[1.02]' 
+                ? 'border-gov-primary bg-gov-primary/10 scale-[1.02]' 
                 : 'border-gov-border hover:border-gov-primary hover:bg-opacity-5'
             }`}
           >
@@ -208,7 +208,7 @@ export default function Files() {
 
           {/* Dynamic Upload Progress */}
           {uploadProgress !== null && (
-            <div className="gov-card space-y-2 p-4 border border-gov-primary border-opacity-35">
+            <div className="gov-card space-y-2 p-4 border border-gov-primary/35">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-gov-primaryLight font-bold">Uploading document...</span>
                 <span className="font-mono font-bold text-gov-text">{uploadProgress}%</span>
@@ -224,7 +224,7 @@ export default function Files() {
 
           {/* Upload Errors */}
           {uploadError && (
-            <div className="p-3.5 rounded-lg bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-35 flex items-start gap-2.5 text-xs text-gov-danger">
+            <div className="p-3.5 rounded-lg bg-gov-danger/10 border border-gov-danger/35 flex items-start gap-2.5 text-xs text-gov-danger">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{uploadError}</span>
             </div>
@@ -288,7 +288,7 @@ export default function Files() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 self-stretch md:self-auto justify-end border-t md:border-t-0 border-gov-border border-opacity-35 pt-3 md:pt-0">
+                  <div className="flex items-center gap-3 self-stretch md:self-auto justify-end border-t md:border-t-0 border-gov-border/35 pt-3 md:pt-0">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -328,11 +328,11 @@ export default function Files() {
 
       {/* File Details Audit Inspector Modal */}
       {selectedFileDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-xl overflow-hidden animate-slide-up shadow-glow-primary">
             
             {/* Header */}
-            <div className="p-6 bg-gov-border bg-opacity-40 border-b border-gov-border flex justify-between items-center">
+            <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
               <div className="flex items-center gap-2 text-gov-text">
                 <Lock className="w-5 h-5 text-gov-success" />
                 <h4 className="font-bold text-xs uppercase tracking-wider">Secure Document Audit Inspector</h4>
@@ -380,7 +380,7 @@ export default function Files() {
                 </div>
               </div>
 
-              <div className="p-3 rounded bg-gov-primary bg-opacity-5 border border-gov-primary border-opacity-20">
+              <div className="p-3 rounded bg-gov-primary/5 border border-gov-primary/20">
                 <div className="flex items-center gap-2 text-gov-primaryLight font-bold mb-1.5">
                   <UserCheck className="w-4 h-4" />
                   <span>M1 RBAC Security Clearances</span>
@@ -399,7 +399,7 @@ export default function Files() {
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-gov-dark bg-opacity-50 border-t border-gov-border flex justify-end gap-3">
+            <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end gap-3">
               <button 
                 onClick={() => setSelectedFileDetails(null)}
                 className="px-4 py-2 rounded bg-gov-primary text-white hover:bg-opacity-95 text-xs font-semibold shadow-glow-primary"

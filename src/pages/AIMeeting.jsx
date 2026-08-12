@@ -100,14 +100,14 @@ export default function AIMeeting() {
     switch (approvalState) {
       case 'Final-Record':
         return {
-          bg: 'bg-gov-success bg-opacity-15 border-gov-success border-opacity-35 text-gov-success',
+          bg: 'bg-gov-success/15 border-gov-success/35 text-gov-success',
           title: 'Final Signed Governance Record',
           desc: 'Verified by human officers and locked. Cryptographic signatures synced to Blockchain node Org1.',
           icon: ShieldCheck
         };
       case 'Human-Approved':
         return {
-          bg: 'bg-gov-primary bg-opacity-15 border-gov-primary border-opacity-35 text-gov-primaryLight',
+          bg: 'bg-gov-primary/15 border-gov-primary/35 text-gov-primaryLight',
           title: 'Human Approved (Pending Ledger Commit)',
           desc: `Approved by Compliance Officer: ${approvedBy || 'admin_aicte'}. Ready to seal.`,
           icon: ThumbsUp
@@ -115,7 +115,7 @@ export default function AIMeeting() {
       case 'AI-Generated':
       default:
         return {
-          bg: 'bg-gov-warning bg-opacity-15 border-gov-warning border-opacity-35 text-gov-warning',
+          bg: 'bg-gov-warning/15 border-gov-warning/35 text-gov-warning',
           title: 'Draft Minutes (Review Required)',
           desc: 'Draft minutes captured by transcription node. Requires compliance officer review and sign-off.',
           icon: AlertTriangle
@@ -135,7 +135,7 @@ export default function AIMeeting() {
           <div className="flex items-center gap-2">
             <h3 className="text-md font-bold text-gov-text">Meeting Minutes & Transcripts Compiler</h3>
             <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold uppercase font-mono ${
-              analysisSource === 'Gemini Live API' ? 'bg-gov-success bg-opacity-20 text-gov-success border border-gov-success border-opacity-30' : 'bg-gov-border text-gov-muted'
+              analysisSource === 'Gemini Live API' ? 'bg-gov-success/20 text-gov-success border border-gov-success/30' : 'bg-gov-border text-gov-muted'
             }`}>
               {analysisSource}
             </span>
@@ -200,7 +200,7 @@ export default function AIMeeting() {
         
         {/* Left Col: Transcript stream + Editor */}
         <div className="xl:col-span-1 gov-card space-y-4">
-          <div className="flex justify-between items-center border-b border-gov-border border-opacity-35 pb-2">
+          <div className="flex justify-between items-center border-b border-gov-border/35 pb-2">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-gov-primaryLight" />
               <h4 className="text-xs font-bold text-gov-text uppercase">Transcripts Manager</h4>
@@ -267,14 +267,14 @@ export default function AIMeeting() {
 
               {/* Configurations warning */}
               {!localStorage.getItem('gemini_api_key') && (
-                <p className="text-[9px] text-gov-warning text-center font-medium leading-normal bg-gov-warning bg-opacity-10 p-2 rounded border border-gov-warning border-opacity-25 mt-1">
+                <p className="text-[9px] text-gov-warning text-center font-medium leading-normal bg-gov-warning/10 p-2 rounded border border-gov-warning/25 mt-1">
                   ⚠️ Save your Gemini API Key in the Configurations tab to run live transcript analysis.
                 </p>
               )}
 
               {/* API error alert */}
               {apiError && (
-                <div className="p-3 rounded-lg bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-35 text-[10px] text-gov-danger leading-relaxed">
+                <div className="p-3 rounded-lg bg-gov-danger/10 border border-gov-danger/35 text-[10px] text-gov-danger leading-relaxed">
                   {apiError}
                 </div>
               )}
@@ -286,7 +286,7 @@ export default function AIMeeting() {
         <div className="xl:col-span-2 space-y-6">
           {/* Executive MoM Summary */}
           <div className="gov-card space-y-4 bg-opacity-40">
-            <div className="flex items-center gap-2 border-b border-gov-border border-opacity-35 pb-2">
+            <div className="flex items-center gap-2 border-b border-gov-border/35 pb-2">
               <FileText className="w-4 h-4 text-gov-primaryLight" />
               <h4 className="text-xs font-bold text-gov-text uppercase">Executive Minutes of Meeting (MoM)</h4>
             </div>
@@ -320,7 +320,7 @@ export default function AIMeeting() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-gov-dark bg-opacity-50 text-gov-muted font-bold border-b border-gov-border">
+                  <tr className="bg-gov-dark/50 text-gov-muted font-bold border-b border-gov-border">
                     <th className="py-3 px-4">Action Item</th>
                     <th className="py-3 px-4">Assignee Officer</th>
                     <th className="py-3 px-4">Deadline</th>
@@ -336,10 +336,10 @@ export default function AIMeeting() {
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${
                           item.status === 'APPROVED' 
-                            ? 'bg-gov-success bg-opacity-15 text-gov-success border-gov-success border-opacity-30'
+                            ? 'bg-gov-success/15 text-gov-success border-gov-success/30'
                             : item.status === 'STANDBY'
-                              ? 'bg-gov-primary bg-opacity-15 text-gov-primaryLight border-gov-primary border-opacity-30'
-                              : 'bg-gov-warning bg-opacity-15 text-gov-warning border-gov-warning border-opacity-30'
+                              ? 'bg-gov-primary/15 text-gov-primaryLight border-gov-primary/30'
+                              : 'bg-gov-warning/15 text-gov-warning border-gov-warning/30'
                         }`}>
                           {item.status}
                         </span>

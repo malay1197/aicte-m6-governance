@@ -42,22 +42,22 @@ export default function AuditLogs() {
   const getSeverityBadge = (severity) => {
     switch (severity) {
       case 'CRITICAL':
-        return 'bg-gov-danger text-white border-gov-danger border-opacity-40 animate-pulse font-bold shadow-glow-danger';
+        return 'bg-gov-danger text-white border-gov-danger/40 animate-pulse font-bold shadow-glow-danger';
       case 'WARNING':
-        return 'bg-gov-warning text-gov-dark border-gov-warning border-opacity-40 font-bold';
+        return 'bg-gov-warning text-gov-dark border-gov-warning/40 font-bold';
       case 'INFO':
       default:
-        return 'bg-gov-primary bg-opacity-20 text-gov-primaryLight border-gov-primary border-opacity-30';
+        return 'bg-gov-primary/20 text-gov-primaryLight border-gov-primary/30';
     }
   };
 
   const getStatusBadge = (status) => {
     if (status === 'Success' || status === 'Resolved') {
-      return 'text-gov-success bg-gov-success bg-opacity-10 border border-gov-success border-opacity-25';
+      return 'text-gov-success bg-gov-success/10 border border-gov-success/25';
     } else if (status === 'Failed' || status === 'Triggered') {
-      return 'text-gov-danger bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-25';
+      return 'text-gov-danger bg-gov-danger/10 border border-gov-danger/25';
     }
-    return 'text-gov-warning bg-gov-warning bg-opacity-10 border border-gov-warning border-opacity-25';
+    return 'text-gov-warning bg-gov-warning/10 border border-gov-warning/25';
   };
 
   return (
@@ -140,7 +140,7 @@ export default function AuditLogs() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gov-dark bg-opacity-50 text-gov-muted font-bold border-b border-gov-border">
+              <tr className="bg-gov-dark/50 text-gov-muted font-bold border-b border-gov-border">
                 <th className="py-4 px-6">Timestamp</th>
                 <th className="py-4 px-6">User</th>
                 <th className="py-4 px-6">Logged Action</th>
@@ -192,11 +192,11 @@ export default function AuditLogs() {
 
       {/* Log Detail Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
             
             {/* Modal Header */}
-            <div className="p-6 bg-gov-border bg-opacity-40 border-b border-gov-border flex items-center gap-3">
+            <div className="p-6 bg-gov-border/40 border-b border-gov-border flex items-center gap-3">
               <Terminal className="w-5 h-5 text-gov-primaryLight" />
               <div>
                 <h4 className="font-bold text-sm text-gov-text uppercase tracking-wide">Audit Log Registry Details</h4>
@@ -241,7 +241,7 @@ export default function AuditLogs() {
             </div>
 
             {/* Modal Actions */}
-            <div className="p-6 bg-gov-dark bg-opacity-50 border-t border-gov-border flex justify-end">
+            <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end">
               <button 
                 onClick={() => setSelectedLog(null)}
                 className="px-4 py-2 rounded bg-gov-primary text-white hover:bg-opacity-95 text-xs font-semibold shadow-glow-primary"

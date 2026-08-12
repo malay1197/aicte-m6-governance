@@ -38,7 +38,7 @@ export default function Settings() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* M1 Auth Sync */}
-          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark bg-opacity-40 space-y-3">
+          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark/40 space-y-3">
             <div className="flex justify-between items-start">
               <span className="text-[10px] text-gov-muted uppercase font-bold">M1 Authentication Shield</span>
               <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-gov-success text-white">ACTIVE</span>
@@ -52,7 +52,7 @@ export default function Settings() {
           </div>
 
           {/* M4 Blockchain Sync */}
-          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark bg-opacity-40 space-y-3">
+          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark/40 space-y-3">
             <div className="flex justify-between items-start">
               <span className="text-[10px] text-gov-muted uppercase font-bold">M4 Blockchain Ledger Link</span>
               <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-gov-success text-white">CONNECTED</span>
@@ -66,7 +66,7 @@ export default function Settings() {
           </div>
 
           {/* M5 AI Sync */}
-          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark bg-opacity-40 space-y-3">
+          <div className="p-4 rounded-xl border border-gov-border bg-gov-dark/40 space-y-3">
             <div className="flex justify-between items-start">
               <span className="text-[10px] text-gov-muted uppercase font-bold">M5 AI Analyzer Engine</span>
               <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-gov-primary text-white">STANDBY</span>
@@ -130,15 +130,15 @@ export default function Settings() {
         <div className="gov-card space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gov-text">Audit Log Archiving Policies</h3>
           <div className="space-y-4 text-xs text-gov-muted">
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Log Retention Period</span>
               <span className="text-gov-text font-bold">365 Days (1 Year)</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Blockchain Anchoring Cycle</span>
               <span className="text-gov-text font-bold">Every Saturday 18:00 UTC</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Emergency Log Quarantine Threshold</span>
               <span className="text-gov-text font-bold">5 critical alarms/min</span>
             </div>
@@ -153,15 +153,15 @@ export default function Settings() {
         <div className="gov-card space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-gov-text">Security Admin Credentials</h3>
           <div className="space-y-4 text-xs text-gov-muted">
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Active Compliance Officer ID</span>
               <span className="text-gov-text font-bold">admin_aicte</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Security Clearance Level</span>
               <span className="text-gov-text font-bold">Level-5 (Top Secret)</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-gov-border border-opacity-35">
+            <div className="flex justify-between items-center py-2 border-b border-gov-border/35">
               <span>Primary Node Node Sync IP</span>
               <span className="text-gov-text font-bold font-mono">10.82.3.153</span>
             </div>

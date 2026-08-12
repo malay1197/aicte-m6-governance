@@ -161,7 +161,7 @@ export default function Blockchain() {
             <div className="animate-slide-up">
               {verificationResult === 'VERIFIED' ? (
                 /* Verified Success Badge Box */
-                <div className="p-4 rounded-xl border border-gov-success border-opacity-35 bg-gov-success bg-opacity-5 space-y-4 text-xs">
+                <div className="p-4 rounded-xl border border-gov-success/35 bg-gov-success/5 space-y-4 text-xs">
                   <div className="flex items-center gap-3 text-gov-success font-bold">
                     <ShieldCheck className="w-6 h-6 shrink-0" />
                     <div>
@@ -170,7 +170,7 @@ export default function Blockchain() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 border-t border-gov-success border-opacity-10 pt-3 font-medium">
+                  <div className="grid grid-cols-2 gap-4 border-t border-gov-success/10 pt-3 font-medium">
                     <div>
                       <span className="text-gov-muted text-[10px] uppercase">Anchored Block Height</span>
                       <span className="text-gov-text block font-mono">#{scannedMetadata.blockHeight}</span>
@@ -196,7 +196,7 @@ export default function Blockchain() {
                 </div>
               ) : (
                 /* Compromised Alert Box */
-                <div className="p-4 rounded-xl border border-gov-danger border-opacity-35 bg-gov-danger bg-opacity-5 space-y-3 text-xs glow-red">
+                <div className="p-4 rounded-xl border border-gov-danger/35 bg-gov-danger/5 space-y-3 text-xs glow-red">
                   <div className="flex items-center gap-3 text-gov-danger font-bold">
                     <ShieldAlert className="w-6 h-6 shrink-0 animate-bounce" />
                     <div>
@@ -231,7 +231,7 @@ export default function Blockchain() {
                   #{block.blockHeight}
                 </div>
                 
-                <div className="flex-1 p-3.5 bg-gov-dark bg-opacity-40 rounded-xl border border-gov-border space-y-2 text-xs">
+                <div className="flex-1 p-3.5 bg-gov-dark/40 rounded-xl border border-gov-border space-y-2 text-xs">
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-gov-text">{block.type}</span>
                     <span className="text-[9px] text-gov-muted font-mono">{block.timestamp}</span>

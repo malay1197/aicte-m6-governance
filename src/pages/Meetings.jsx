@@ -160,14 +160,14 @@ export default function Meetings() {
   const getSensitivityBadge = (level) => {
     switch (level) {
       case 'TOP SECRET':
-        return 'bg-gov-danger bg-opacity-20 border-gov-danger text-gov-danger';
+        return 'bg-gov-danger/20 border-gov-danger text-gov-danger';
       case 'HIGH':
-        return 'bg-gov-warning bg-opacity-20 border-gov-warning text-gov-warning';
+        return 'bg-gov-warning/20 border-gov-warning text-gov-warning';
       case 'MEDIUM':
-        return 'bg-gov-primary bg-opacity-20 border-gov-primary text-gov-primaryLight';
+        return 'bg-gov-primary/20 border-gov-primary text-gov-primaryLight';
       case 'LOW':
       default:
-        return 'bg-gov-secondary bg-opacity-20 border-gov-secondary text-gov-success';
+        return 'bg-gov-secondary/20 border-gov-secondary text-gov-success';
     }
   };
 
@@ -206,7 +206,7 @@ export default function Meetings() {
 
       {/* 2. Main Live Meeting Call View */}
       {activeCallMeeting ? (
-        <div className="gov-card border-gov-primary border-opacity-40 p-0 overflow-hidden relative shadow-glow-primary">
+        <div className="gov-card border-gov-primary/40 p-0 overflow-hidden relative shadow-glow-primary">
           {/* Call Header */}
           <div className="bg-gov-dark p-4 flex flex-wrap items-center justify-between border-b border-gov-border gap-4">
             <div className="flex items-center gap-3">
@@ -237,7 +237,7 @@ export default function Meetings() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gov-success bg-gov-success bg-opacity-10 border border-gov-success border-opacity-20 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-2 text-xs text-gov-success bg-gov-success/10 border border-gov-success/20 px-3 py-1 rounded-full">
                 <Lock className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold">AES-256 E2EE ACTIVE</span>
               </div>
@@ -266,7 +266,7 @@ export default function Meetings() {
                       </div>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center relative">
-                        <div className="absolute top-4 left-4 bg-black bg-opacity-65 px-2.5 py-1 rounded text-[10px] text-gov-text font-bold z-10">
+                        <div className="absolute top-4 left-4 bg-black/65 px-2.5 py-1 rounded text-[10px] text-gov-text font-bold z-10">
                           Active Stream: admin_aicte (You)
                         </div>
                         {/* Simulated Visual Stream grid background */}
@@ -282,27 +282,27 @@ export default function Meetings() {
 
                   {/* Micro participants list cards */}
                   <div className="grid grid-cols-3 gap-4 mt-4 h-24">
-                    <div className="bg-[#11182c] border border-gov-border border-opacity-40 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black bg-opacity-40 px-1 rounded">Dr. Anil S.</span>
-                      <div className="w-8 h-8 rounded-full bg-gov-primary bg-opacity-20 flex items-center justify-center text-xs text-gov-primaryLight">AS</div>
+                    <div className="bg-[#11182c] border border-gov-border/40 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black/40 px-1 rounded">Dr. Anil S.</span>
+                      <div className="w-8 h-8 rounded-full bg-gov-primary/20 flex items-center justify-center text-xs text-gov-primaryLight">AS</div>
                     </div>
-                    <div className="bg-[#11182c] border border-gov-border border-opacity-40 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black bg-opacity-40 px-1 rounded">Prof. Rajive K.</span>
-                      <div className="w-8 h-8 rounded-full bg-gov-secondary bg-opacity-20 flex items-center justify-center text-xs text-gov-success">RK</div>
+                    <div className="bg-[#11182c] border border-gov-border/40 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black/40 px-1 rounded">Prof. Rajive K.</span>
+                      <div className="w-8 h-8 rounded-full bg-gov-secondary/20 flex items-center justify-center text-xs text-gov-success">RK</div>
                     </div>
-                    <div className="bg-[#11182c] border border-gov-border border-opacity-40 rounded-lg flex items-center justify-center relative overflow-hidden">
-                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black bg-opacity-40 px-1 rounded">Dr. Abhay J.</span>
-                      <div className="w-8 h-8 rounded-full bg-gov-warning bg-opacity-20 flex items-center justify-center text-xs text-gov-warning">AJ</div>
+                    <div className="bg-[#11182c] border border-gov-border/40 rounded-lg flex items-center justify-center relative overflow-hidden">
+                      <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black/40 px-1 rounded">Dr. Abhay J.</span>
+                      <div className="w-8 h-8 rounded-full bg-gov-warning/20 flex items-center justify-center text-xs text-gov-warning">AJ</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Right sidebar details */}
-                <div className="lg:col-span-1 border-l border-gov-border bg-gov-dark bg-opacity-40 p-4 flex flex-col justify-between">
+                <div className="lg:col-span-1 border-l border-gov-border bg-gov-dark/40 p-4 flex flex-col justify-between">
                   <div>
                     <h5 className="text-[10px] text-gov-muted uppercase font-bold tracking-wider mb-3">Participants ({simulatedParticipants.length + 1})</h5>
                     <div className="space-y-2">
-                      <div className="flex justify-between items-center text-xs p-2 bg-gov-primary bg-opacity-10 rounded border border-gov-primary border-opacity-20">
+                      <div className="flex justify-between items-center text-xs p-2 bg-gov-primary/10 rounded border border-gov-primary/20">
                         <span className="font-semibold text-gov-text">admin_aicte (You)</span>
                         <span className="text-[8px] bg-gov-primary text-white px-1.5 py-0.5 rounded font-bold">HOST</span>
                       </div>
@@ -338,7 +338,7 @@ export default function Meetings() {
                 <button 
                   onClick={() => setIsMuted(!isMuted)}
                   className={`p-3 rounded-full border transition cursor-pointer ${
-                    isMuted ? 'bg-gov-danger bg-opacity-25 border-gov-danger text-gov-danger' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
+                    isMuted ? 'bg-gov-danger/25 border-gov-danger text-gov-danger' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
                   }`}
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -347,7 +347,7 @@ export default function Meetings() {
                 <button 
                   onClick={() => setIsVideoOff(!isVideoOff)}
                   className={`p-3 rounded-full border transition cursor-pointer ${
-                    isVideoOff ? 'bg-gov-danger bg-opacity-25 border-gov-danger text-gov-danger' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
+                    isVideoOff ? 'bg-gov-danger/25 border-gov-danger text-gov-danger' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
                   }`}
                 >
                   {isVideoOff ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
@@ -356,7 +356,7 @@ export default function Meetings() {
                 <button 
                   onClick={() => setIsSharingScreen(!isSharingScreen)}
                   className={`p-3 rounded-full border transition cursor-pointer ${
-                    isSharingScreen ? 'bg-gov-success bg-opacity-25 border-gov-success text-gov-success' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
+                    isSharingScreen ? 'bg-gov-success/25 border-gov-success text-gov-success' : 'bg-gov-dark border-gov-border text-gov-text hover:bg-slate-800'
                   }`}
                 >
                   <Tv className="w-4 h-4" />
@@ -392,9 +392,9 @@ export default function Meetings() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-gov-border border-opacity-30 pt-4 gap-2">
+              <div className="flex items-center justify-between border-t border-gov-border/30 pt-4 gap-2">
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                  meet.status === 'Completed' ? 'bg-gov-success bg-opacity-15 text-gov-success' : 'bg-gov-warning bg-opacity-15 text-gov-warning animate-pulse'
+                  meet.status === 'Completed' ? 'bg-gov-success/15 text-gov-success' : 'bg-gov-warning/15 text-gov-warning animate-pulse'
                 }`}>
                   {meet.status === 'Completed' ? 'ARCHIVED' : 'LIVE BOARD'}
                 </span>
@@ -414,10 +414,10 @@ export default function Meetings() {
 
       {/* 4. Schedule Meeting Modal */}
       {showScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <form onSubmit={handleScheduleSubmit} className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
             {/* Modal Header */}
-            <div className="p-6 bg-gov-border bg-opacity-40 border-b border-gov-border flex justify-between items-center">
+            <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-gov-primaryLight" />
                 <h4 className="font-bold text-sm text-gov-text uppercase tracking-wide">Schedule Council Meeting</h4>
@@ -507,7 +507,7 @@ export default function Meetings() {
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="p-6 bg-gov-dark bg-opacity-50 border-t border-gov-border flex justify-end gap-3">
+            <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end gap-3">
               <button 
                 type="button" 
                 onClick={() => setShowScheduleModal(false)}

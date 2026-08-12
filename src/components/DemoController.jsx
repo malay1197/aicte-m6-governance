@@ -126,9 +126,9 @@ export default function DemoController({
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl bg-slate-900 border border-gov-primary border-opacity-65 rounded-xl shadow-glow-primary p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl bg-slate-900 border border-gov-primary/65 rounded-xl shadow-glow-primary p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div className="flex items-start gap-3 flex-1">
-        <div className="p-2 bg-gov-primary bg-opacity-20 rounded-lg text-gov-primaryLight shrink-0">
+        <div className="p-2 bg-gov-primary/20 rounded-lg text-gov-primaryLight shrink-0">
           <Award className="w-5 h-5" />
         </div>
         <div className="space-y-0.5">

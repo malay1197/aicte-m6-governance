@@ -62,7 +62,7 @@ export default function Memory() {
           </div>
 
           {/* Secure indicator badge */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-gov-success bg-opacity-10 border border-gov-success border-opacity-30 text-gov-success text-xs font-semibold max-w-max">
+          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-gov-success/10 border border-gov-success/30 text-gov-success text-xs font-semibold max-w-max">
             <ShieldCheck className="w-4 h-4" />
             <div>
               <span>🔐 Authorized Search Enforced</span>
@@ -87,14 +87,14 @@ export default function Memory() {
         </div>
 
         {/* Tab Filters */}
-        <div className="flex gap-2 border-b border-gov-border border-opacity-35 pb-2 overflow-x-auto">
+        <div className="flex gap-2 border-b border-gov-border/35 pb-2 overflow-x-auto">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-4 py-2 rounded-md text-xs font-bold transition-all ${
                 activeCategory === cat
-                  ? 'bg-gov-primary bg-opacity-25 text-gov-primaryLight border border-gov-primary border-opacity-40'
+                  ? 'bg-gov-primary/25 text-gov-primaryLight border border-gov-primary/40'
                   : 'text-gov-muted hover:text-gov-text hover:bg-gov-border hover:bg-opacity-50'
               }`}
             >
@@ -131,7 +131,7 @@ export default function Memory() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-6 self-stretch md:self-auto border-t md:border-t-0 border-gov-border border-opacity-30 pt-3 md:pt-0">
+                <div className="flex items-center gap-6 self-stretch md:self-auto border-t md:border-t-0 border-gov-border/30 pt-3 md:pt-0">
                   {/* FTS/Vector matching score */}
                   <div className="text-right">
                     <span className="text-[10px] text-gov-muted block font-semibold uppercase">FTS Match Score</span>
@@ -157,18 +157,18 @@ export default function Memory() {
 
       {/* Record Inspect Modal (M4 + M5 sync proof) */}
       {selectedRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-2xl overflow-hidden animate-slide-up shadow-glow-primary">
             
             {/* Modal Header */}
-            <div className="p-6 bg-gov-border bg-opacity-40 border-b border-gov-border flex justify-between items-center">
+            <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-gov-dark border border-gov-border text-gov-muted">
                   {selectedRecord.category}
                 </span>
                 <h4 className="font-bold text-sm text-gov-text uppercase tracking-wide">{selectedRecord.title}</h4>
               </div>
-              <span className="text-xs font-mono font-bold text-gov-success bg-gov-success bg-opacity-10 px-2 py-1 rounded">
+              <span className="text-xs font-mono font-bold text-gov-success bg-gov-success/10 px-2 py-1 rounded">
                 Verified Compliance
               </span>
             </div>
@@ -214,7 +214,7 @@ export default function Memory() {
               </div>
 
               {/* M1 authorization proof */}
-              <div className="p-3.5 rounded-lg border border-gov-border bg-gov-dark bg-opacity-40">
+              <div className="p-3.5 rounded-lg border border-gov-border bg-gov-dark/40">
                 <div className="flex items-center gap-2 mb-2 text-gov-text font-bold">
                   <UserCheck className="w-4 h-4 text-gov-primaryLight" />
                   <span>M1 Access Control Authentication</span>
@@ -229,7 +229,7 @@ export default function Memory() {
               </div>
 
               {/* M4 Blockchain Sync Info */}
-              <div className="p-3.5 rounded-lg border border-gov-success border-opacity-20 bg-gov-success bg-opacity-5">
+              <div className="p-3.5 rounded-lg border border-gov-success/20 bg-gov-success/5">
                 <div className="flex items-center gap-2 mb-1.5 text-gov-success font-bold">
                   <LinkIcon className="w-4 h-4" />
                   <span>M4 Blockchain Ledger Verification</span>
@@ -243,7 +243,7 @@ export default function Memory() {
               </div>
 
               {/* M5 AI Analysis Info */}
-              <div className="p-3.5 rounded-lg border border-gov-primary border-opacity-20 bg-gov-primary bg-opacity-5">
+              <div className="p-3.5 rounded-lg border border-gov-primary/20 bg-gov-primary/5">
                 <div className="flex items-center gap-2 mb-1 text-gov-primaryLight font-bold">
                   <Cpu className="w-4 h-4" />
                   <span>M5 AI Transcription Summary</span>
@@ -256,7 +256,7 @@ export default function Memory() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 bg-gov-dark bg-opacity-50 border-t border-gov-border flex justify-end">
+            <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end">
               <button 
                 onClick={() => setSelectedRecord(null)}
                 className="px-5 py-2.5 rounded-lg bg-gov-primary text-white hover:bg-opacity-95 text-xs font-semibold shadow-glow-primary"

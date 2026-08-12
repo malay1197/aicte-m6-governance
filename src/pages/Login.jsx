@@ -85,7 +85,7 @@ export default function Login({ onLoginSuccess }) {
         
         {/* Shield Icon & Portal Header */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="bg-gov-primary bg-opacity-20 p-4 rounded-full text-gov-primaryLight ring-4 ring-gov-primary ring-opacity-10">
+          <div className="bg-gov-primary/20 p-4 rounded-full text-gov-primaryLight ring-4 ring-gov-primary ring-opacity-10">
             <Shield className="w-8 h-8" />
           </div>
           <div>
@@ -96,7 +96,7 @@ export default function Login({ onLoginSuccess }) {
 
         {/* Status Error Alert */}
         {error && (
-          <div className="p-3 rounded-lg bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-30 flex items-start gap-2.5 text-xs text-gov-danger">
+          <div className="p-3 rounded-lg bg-gov-danger/10 border border-gov-danger/30 flex items-start gap-2.5 text-xs text-gov-danger">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span className="leading-snug">{error}</span>
           </div>
@@ -212,7 +212,7 @@ export default function Login({ onLoginSuccess }) {
         )}
 
         {/* Security Warning footer footer */}
-        <div className="text-[9px] text-gov-muted text-center pt-2 border-t border-gov-border border-opacity-35">
+        <div className="text-[9px] text-gov-muted text-center pt-2 border-t border-gov-border/35">
           🔒 Encrypted Session AES-GCM. Unauthorised access attempts are logged under compliance guidelines (M6 audit trails).
         </div>
       </div>

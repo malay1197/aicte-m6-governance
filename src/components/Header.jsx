@@ -59,21 +59,21 @@ export default function Header({
       {/* Sync Status Indicators */}
       <div className="hidden xl:flex items-center gap-5">
         {/* M1 Status */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark bg-opacity-40 border border-gov-border">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark/40 border border-gov-border">
           <User className="w-3.5 h-3.5 text-gov-success" />
           <span className="text-[9px] text-gov-muted uppercase font-extrabold">M1: Auth</span>
           <span className="text-[9px] text-gov-success font-extrabold">MFA ENFORCED</span>
         </div>
 
         {/* M4 Blockchain Status */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark bg-opacity-40 border border-gov-border">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark/40 border border-gov-border">
           <LinkIcon className="w-3.5 h-3.5 text-gov-success" />
           <span className="text-[9px] text-gov-muted uppercase font-extrabold">M4: Ledger</span>
           <span className="text-[9px] text-gov-success font-extrabold">SYNCED</span>
         </div>
 
         {/* M5 AI Analyzer Status */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark bg-opacity-40 border border-gov-border">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-gov-dark/40 border border-gov-border">
           <Cpu className="w-3.5 h-3.5 text-gov-primaryLight" />
           <span className="text-[9px] text-gov-muted uppercase font-extrabold">M5: AI Engine</span>
           <span className="text-[9px] text-gov-primaryLight font-extrabold">ACTIVE</span>
@@ -83,7 +83,7 @@ export default function Header({
         {criticalCount > 0 && (
           <button 
             onClick={onOpenSecurityPanel}
-            className="flex items-center gap-2 px-3 py-1 rounded bg-gov-danger bg-opacity-15 border border-gov-danger text-gov-danger hover:bg-opacity-25 animate-pulse transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1 rounded bg-gov-danger/15 border border-gov-danger text-gov-danger hover:bg-opacity-25 animate-pulse transition-all cursor-pointer"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             <span className="text-[10px] font-bold">Threat Alerts ({criticalCount})</span>
@@ -96,7 +96,7 @@ export default function Header({
         {/* Polished Theme Toggle Toggler */}
         <button
           onClick={toggleTheme}
-          className="p-2.5 rounded-lg bg-gov-dark bg-opacity-40 border border-gov-border text-gov-muted hover:text-gov-text hover:border-gov-primary transition duration-300 relative overflow-hidden group cursor-pointer"
+          className="p-2.5 rounded-lg bg-gov-dark/40 border border-gov-border text-gov-muted hover:text-gov-text hover:border-gov-primary transition duration-300 relative overflow-hidden group cursor-pointer"
           title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
         >
           <div className="relative w-5 h-5 flex items-center justify-center transition-transform duration-500 rotate-0 group-hover:rotate-45">
@@ -119,7 +119,7 @@ export default function Header({
               <p className="text-xs font-bold text-gov-text">admin_aicte</p>
               <p className="text-[9px] text-gov-muted font-medium">Compliance Officer</p>
             </div>
-            <div className="w-9 h-9 rounded-lg bg-gov-primary bg-opacity-10 border border-gov-primary border-opacity-30 flex items-center justify-center text-gov-primaryLight hover:bg-opacity-25 transition">
+            <div className="w-9 h-9 rounded-lg bg-gov-primary/10 border border-gov-primary/30 flex items-center justify-center text-gov-primaryLight hover:bg-opacity-25 transition">
               <User className="w-4 h-4" />
             </div>
           </button>
@@ -127,7 +127,7 @@ export default function Header({
           {/* Quick Dropdown menu */}
           {showProfileMenu && (
             <div className="absolute right-0 top-12 w-44 bg-gov-card border border-gov-border rounded-lg shadow-lg py-1.5 z-50 animate-slide-up">
-              <div className="px-4 py-2 border-b border-gov-border border-opacity-35 md:hidden">
+              <div className="px-4 py-2 border-b border-gov-border/35 md:hidden">
                 <p className="text-xs font-bold text-gov-text">admin_aicte</p>
                 <p className="text-[9px] text-gov-muted font-medium">Compliance Officer</p>
               </div>

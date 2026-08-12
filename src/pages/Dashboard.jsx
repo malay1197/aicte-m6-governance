@@ -36,11 +36,11 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
 
   // Statistics cards data
   const stats = [
-    { title: 'Total Meetings Logged', value: mockDashboardStats.totalMeetings, icon: Calendar, color: 'text-gov-primaryLight', bg: 'bg-gov-primary bg-opacity-10' },
-    { title: 'Total Governance Members', value: mockDashboardStats.totalParticipants, icon: Users, color: 'text-gov-secondaryLight', bg: 'bg-gov-secondary bg-opacity-10' },
-    { title: 'Avg. Attendance Rate', value: mockDashboardStats.attendanceRate, icon: Percent, color: 'text-gov-success', bg: 'bg-gov-success bg-opacity-10' },
-    { title: 'Active Security Events', value: securityEvents.filter(e => e.status === 'Active').length, icon: ShieldAlert, color: 'text-gov-danger', bg: 'bg-gov-danger bg-opacity-10' },
-    { title: 'Pending Actions', value: mockDashboardStats.pendingActions, icon: Clock, color: 'text-gov-warning', bg: 'bg-gov-warning bg-opacity-10' }
+    { title: 'Total Meetings Logged', value: mockDashboardStats.totalMeetings, icon: Calendar, color: 'text-gov-primaryLight', bg: 'bg-gov-primary/10' },
+    { title: 'Total Governance Members', value: mockDashboardStats.totalParticipants, icon: Users, color: 'text-gov-secondaryLight', bg: 'bg-gov-secondary/10' },
+    { title: 'Avg. Attendance Rate', value: mockDashboardStats.attendanceRate, icon: Percent, color: 'text-gov-success', bg: 'bg-gov-success/10' },
+    { title: 'Active Security Events', value: securityEvents.filter(e => e.status === 'Active').length, icon: ShieldAlert, color: 'text-gov-danger', bg: 'bg-gov-danger/10' },
+    { title: 'Pending Actions', value: mockDashboardStats.pendingActions, icon: Clock, color: 'text-gov-warning', bg: 'bg-gov-warning/10' }
   ];
 
   // Recharts Attendance Trend Data
@@ -178,19 +178,19 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
 
           {/* Severity Category Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="p-4 rounded-lg bg-gov-danger bg-opacity-10 border border-gov-danger border-opacity-20 text-center">
+            <div className="p-4 rounded-lg bg-gov-danger/10 border border-gov-danger/20 text-center">
               <span className="text-xs text-gov-muted block">Critical Events</span>
               <span className="text-xl font-bold text-gov-danger mt-1 block">{criticalCount}</span>
             </div>
-            <div className="p-4 rounded-lg bg-gov-warning bg-opacity-10 border border-gov-warning border-opacity-20 text-center">
+            <div className="p-4 rounded-lg bg-gov-warning/10 border border-gov-warning/20 text-center">
               <span className="text-xs text-gov-muted block">Warnings</span>
               <span className="text-xl font-bold text-gov-warning mt-1 block">{warningCount}</span>
             </div>
-            <div className="p-4 rounded-lg bg-gov-primary bg-opacity-10 border border-gov-primary border-opacity-20 text-center">
+            <div className="p-4 rounded-lg bg-gov-primary/10 border border-gov-primary/20 text-center">
               <span className="text-xs text-gov-muted block">Active Events</span>
               <span className="text-xl font-bold text-gov-primaryLight mt-1 block">{activeEventsCount}</span>
             </div>
-            <div className="p-4 rounded-lg bg-gov-secondary bg-opacity-10 border border-gov-secondary border-opacity-20 text-center">
+            <div className="p-4 rounded-lg bg-gov-secondary/10 border border-gov-secondary/20 text-center">
               <span className="text-xs text-gov-muted block">Resolved</span>
               <span className="text-xl font-bold text-gov-success mt-1 block">{resolvedEventsCount}</span>
             </div>
@@ -204,9 +204,9 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
                 className={`p-3 rounded-lg border flex justify-between items-center transition-all ${
                   evt.status === 'Active' 
                     ? evt.severity === 'CRITICAL' 
-                      ? 'bg-gov-danger bg-opacity-5 border-gov-danger border-opacity-30 glow-red' 
-                      : 'bg-gov-warning bg-opacity-5 border-gov-warning border-opacity-30'
-                    : 'bg-gov-dark bg-opacity-40 border-gov-border'
+                      ? 'bg-gov-danger/5 border-gov-danger/30 glow-red' 
+                      : 'bg-gov-warning/5 border-gov-warning/30'
+                    : 'bg-gov-dark/40 border-gov-border'
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -274,12 +274,12 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
 
       {/* Security Event Details Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
             
             {/* Modal Header */}
             <div className={`p-6 flex items-center gap-3 text-white ${
-              selectedEvent.severity === 'CRITICAL' ? 'bg-gov-danger bg-opacity-20 border-b border-gov-danger border-opacity-30' : 'bg-gov-warning bg-opacity-20 border-b border-gov-warning border-opacity-30'
+              selectedEvent.severity === 'CRITICAL' ? 'bg-gov-danger/20 border-b border-gov-danger/30' : 'bg-gov-warning/20 border-b border-gov-warning/30'
             }`}>
               <AlertTriangle className="w-5 h-5 text-gov-danger" />
               <div>
@@ -321,7 +321,7 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
             </div>
 
             {/* Modal Actions */}
-            <div className="p-6 bg-gov-dark bg-opacity-50 border-t border-gov-border flex justify-end gap-3">
+            <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end gap-3">
               <button 
                 onClick={() => setSelectedEvent(null)}
                 className="px-4 py-2 rounded bg-gov-border text-gov-muted hover:bg-slate-700 hover:text-gov-text text-xs font-semibold"

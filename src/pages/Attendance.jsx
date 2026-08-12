@@ -31,13 +31,13 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
   const getStatusStyle = (status) => {
     switch (status) {
       case 'Present':
-        return 'bg-gov-success bg-opacity-10 text-gov-success border-gov-success border-opacity-30';
+        return 'bg-gov-success/10 text-gov-success border-gov-success/30';
       case 'Late':
-        return 'bg-gov-warning bg-opacity-10 text-gov-warning border-gov-warning border-opacity-30';
+        return 'bg-gov-warning/10 text-gov-warning border-gov-warning/30';
       case 'Left Early':
-        return 'bg-gov-danger bg-opacity-10 text-gov-danger border-gov-danger border-opacity-30';
+        return 'bg-gov-danger/10 text-gov-danger border-gov-danger/30';
       case 'Absent':
-        return 'bg-gov-muted bg-opacity-15 text-gov-muted border-gov-border';
+        return 'bg-gov-muted/15 text-gov-muted border-gov-border';
       default:
         return 'bg-slate-700 text-slate-300';
     }
@@ -62,7 +62,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                 onClick={() => setSelectMeetingId(meet.id)}
                 className={`gov-card text-left transition-all relative overflow-hidden ${
                   isSelected 
-                    ? 'border-gov-primary border-opacity-60 shadow-glow-primary bg-opacity-80' 
+                    ? 'border-gov-primary/60 shadow-glow-primary bg-opacity-80' 
                     : 'hover:border-gov-border hover:bg-opacity-85'
                 }`}
               >
@@ -71,7 +71,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-[10px] text-gov-muted font-mono">{meet.date}</span>
                       <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${
-                        meet.status === 'Completed' ? 'bg-gov-success bg-opacity-15 text-gov-success' : 'bg-gov-warning bg-opacity-15 text-gov-warning'
+                        meet.status === 'Completed' ? 'bg-gov-success/15 text-gov-success' : 'bg-gov-warning/15 text-gov-warning'
                       }`}>
                         {meet.status}
                       </span>
@@ -79,7 +79,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                     <h4 className="text-sm font-bold text-gov-text line-clamp-2 leading-snug">{meet.name}</h4>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 border-t border-gov-border border-opacity-30 pt-3 text-center text-xs">
+                  <div className="grid grid-cols-3 gap-2 border-t border-gov-border/30 pt-3 text-center text-xs">
                     <div>
                       <span className="text-gov-muted text-[10px] block">Total</span>
                       <span className="font-semibold text-gov-text">{meet.totalParticipants}</span>
@@ -164,7 +164,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gov-dark bg-opacity-50 text-gov-muted font-bold border-b border-gov-border">
+              <tr className="bg-gov-dark/50 text-gov-muted font-bold border-b border-gov-border">
                 <th className="py-4 px-6">Participant</th>
                 <th className="py-4 px-6">Official Role</th>
                 <th className="py-4 px-6">Join Time</th>

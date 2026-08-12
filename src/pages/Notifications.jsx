@@ -36,15 +36,15 @@ export default function Notifications({ notifications, setNotifications }) {
   };
 
   const getPriorityStyle = (priority, isRead) => {
-    if (isRead) return 'border-gov-border bg-gov-dark bg-opacity-30 opacity-60';
+    if (isRead) return 'border-gov-border bg-gov-dark/30 opacity-60';
     switch (priority) {
       case 'CRITICAL':
-        return 'border-gov-danger bg-gov-danger bg-opacity-5 glow-red';
+        return 'border-gov-danger bg-gov-danger/5 glow-red';
       case 'HIGH':
-        return 'border-gov-warning bg-gov-warning bg-opacity-5';
+        return 'border-gov-warning bg-gov-warning/5';
       case 'MEDIUM':
       default:
-        return 'border-gov-primary border-opacity-40 bg-gov-primary bg-opacity-5';
+        return 'border-gov-primary/40 bg-gov-primary/5';
     }
   };
 

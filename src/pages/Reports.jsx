@@ -143,7 +143,7 @@ export default function Reports() {
                   onClick={() => setReportType(opt.id)}
                   className={`w-full text-left p-3 rounded-lg border text-xs transition-all ${
                     reportType === opt.id 
-                      ? 'border-gov-primary bg-gov-primary bg-opacity-10 text-gov-primaryLight' 
+                      ? 'border-gov-primary bg-gov-primary/10 text-gov-primaryLight' 
                       : 'border-gov-border hover:bg-slate-800 text-gov-muted'
                   }`}
                 >
