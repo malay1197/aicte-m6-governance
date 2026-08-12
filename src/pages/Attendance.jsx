@@ -12,7 +12,10 @@ import {
   Activity,
   History,
   X,
-  ArrowUpDown
+  ArrowUpDown,
+  BookOpen,
+  TrendingUp,
+  Award
 } from 'lucide-react';
 import { mockMeetings } from '../utils/mockData';
 import { api } from '../utils/api';
@@ -30,6 +33,9 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
 
   // Dynamic meetings database cache
   const [meetings, setMeetings] = useState([]);
+
+  // Student dashboard states
+  const [studentStatsList, setStudentStatsList] = useState([]);
 
   // Load meetings list on component mount
   useEffect(() => {
@@ -50,17 +56,14 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     }
   };
 
-  // Selected meeting logic
-  const selectedMeeting = meetings.find(m => m.id === selectMeetingId) || meetings[0] || mockMeetings[0];
-
-  // Fetch attendance from server/local fallback
+  // Fetch student stats across all courses if role is Student
   useEffect(() => {
-    fetchLogs();
-    
-    // Near real-time updates: poll logs every 2 seconds
-    const interval = setInterval(fetchLogs, 2000);
-    return () => clearInterval(interval);
-  }, [selectMeetingId]);
+    if (user && user.role === 'Student' && meetings.length > 0) {
+      loadStudentStats();
+      const interval = setInterval(loadStudentStats, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [meetings, user]);
 
   // Dynamic counting updates every second
   useEffect(() => {
@@ -70,6 +73,27 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return () => clearInterval(timer);
   }, []);
 
+  const loadStudentStats = async () => {
+    const list = [];
+    for (let meet of meetings) {
+      try {
+        const stats = await api.getUserMeetingAttendance(meet.id, user.username, user);
+        if (stats) {
+          list.push({
+            meetingId: meet.id,
+            meetingName: meet.name,
+            meetingDate: meet.date,
+            meetingDurationMinutes: meet.id === 'meet-001' ? 90 : 150,
+            ...stats
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load student stats:", err);
+      }
+    }
+    setStudentStatsList(list);
+  };
+
   const fetchLogs = async () => {
     try {
       const list = await api.getMeetingAttendance(selectMeetingId, user || { username: 'admin_aicte', role: 'Admin' });
@@ -78,6 +102,15 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
       console.error("Failed to load attendance logs:", err);
     }
   };
+
+  // Fetch admin logs
+  useEffect(() => {
+    if (user && user.role !== 'Student') {
+      fetchLogs();
+      const interval = setInterval(fetchLogs, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [selectMeetingId, user]);
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -119,10 +152,256 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return secs;
   };
 
-  // Determine meeting target duration in minutes
+  // Student specific calculation helpers
+  const getStudentLiveSecs = (meetStats) => {
+    let secs = meetStats.totalDurationSeconds || 0;
+    if (meetStats.status === 'Online' && meetStats.sessions) {
+      const activeSess = meetStats.sessions.find(s => s.status === 'Active');
+      if (activeSess) {
+        const joinTime = new Date(activeSess.joinTime);
+        const liveSecs = Math.max(0, Math.floor((Date.now() - joinTime) / 1000));
+        secs += liveSecs;
+      }
+    }
+    return secs;
+  };
+
+  // --- Student Personal Attendance Dashboard View ---
+  if (user && user.role === 'Student') {
+    const totalMeetings = studentStatsList.length;
+    const attendedCount = studentStatsList.filter(s => s.sessionsCount > 0).length;
+    
+    let totalAccumulatedSecs = 0;
+    let sumPercentages = 0;
+
+    studentStatsList.forEach(m => {
+      const liveSec = getStudentLiveSecs(m);
+      totalAccumulatedSecs += liveSec;
+      const targetSec = m.meetingDurationMinutes * 60;
+      const pct = Math.min(100, Math.round((liveSec / targetSec) * 100));
+      sumPercentages += pct;
+    });
+
+    const studentAvgPct = totalMeetings > 0 ? Math.round(sumPercentages / totalMeetings) : 0;
+    const isCompliant = studentAvgPct >= 75;
+
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* Header Block */}
+        <div className="gov-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-md font-bold text-gov-text">My Personal Attendance Sheets</h3>
+            <p className="text-xs text-gov-muted mt-0.5">
+              Review your course participation timelines, durations, and compliance metrics. Authenticated: <span className="text-gov-primaryLight font-bold">{user.name}</span>
+            </p>
+          </div>
+          <span className={`text-[10px] px-3 py-1 rounded font-bold uppercase ${
+            isCompliant ? 'bg-gov-success/15 text-gov-success' : 'bg-gov-danger/15 text-gov-danger animate-pulse'
+          }`}>
+            {isCompliant ? 'Compliance Target Met' : 'Warning: Attendance Low'}
+          </span>
+        </div>
+
+        {/* Global Personal Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="gov-card p-4 text-center border-gov-border/60 flex flex-col justify-between">
+            <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Average Attendance</span>
+            <span className="text-lg font-bold text-gov-text mt-1.5 block flex items-center justify-center gap-1.5">
+              <TrendingUp className="w-5 h-5 text-gov-primaryLight" />
+              {studentAvgPct}%
+            </span>
+          </div>
+
+          <div className="gov-card p-4 text-center border-gov-border/60 flex flex-col justify-between">
+            <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Total Connected Time</span>
+            <span className="text-sm font-bold text-gov-primaryLight mt-1.5 block flex items-center justify-center gap-1.5">
+              <Clock className="w-5 h-5 text-gov-primaryLight" />
+              {formatSeconds(totalAccumulatedSecs)}
+            </span>
+          </div>
+
+          <div className="gov-card p-4 text-center border-gov-border/60 flex flex-col justify-between">
+            <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Classes Registered</span>
+            <span className="text-lg font-bold text-gov-success mt-1.5 block flex items-center justify-center gap-1.5">
+              <BookOpen className="w-5 h-5 text-gov-success" />
+              {totalMeetings}
+            </span>
+          </div>
+
+          <div className="gov-card p-4 text-center border-gov-border/60 flex flex-col justify-between">
+            <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Present/Attended</span>
+            <span className="text-lg font-bold text-gov-warning mt-1.5 block flex items-center justify-center gap-1.5">
+              <Award className="w-5 h-5 text-gov-warning" />
+              {attendedCount} / {totalMeetings}
+            </span>
+          </div>
+        </div>
+
+        {/* Log Roster Card */}
+        <div className="gov-card p-0 overflow-hidden">
+          <div className="p-6 border-b border-gov-border">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-gov-text">Active Course Lectures & Attendance Stats</h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-gov-dark/50 text-gov-muted font-bold border-b border-gov-border">
+                  <th className="py-4 px-6">Lecture Course</th>
+                  <th className="py-4 px-6">Date</th>
+                  <th className="py-4 px-6 text-center">Status</th>
+                  <th className="py-4 px-6 text-center">Sessions Logged</th>
+                  <th className="py-4 px-6 text-right">Current Session</th>
+                  <th className="py-4 px-6 text-right">Total Duration</th>
+                  <th className="py-4 px-6 text-right">My Attendance %</th>
+                  <th className="py-4 px-6 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gov-border/30">
+                {studentStatsList.length > 0 ? (
+                  studentStatsList.map((m) => {
+                    const liveSec = getStudentLiveSecs(m);
+                    const pct = Math.min(100, Math.round((liveSec / (m.meetingDurationMinutes * 60)) * 100));
+                    
+                    let curSessStr = '—';
+                    if (m.status === 'Online' && m.sessions) {
+                      const activeSess = m.sessions.find(s => s.status === 'Active');
+                      if (activeSess) {
+                        const curSec = Math.max(0, Math.floor((Date.now() - new Date(activeSess.joinTime)) / 1000));
+                        curSessStr = formatSeconds(curSec);
+                      }
+                    }
+
+                    return (
+                      <tr key={m.meetingId} className="hover:bg-gov-dark/20 transition-colors">
+                        <td className="py-4 px-6 font-semibold text-gov-text">{m.meetingName}</td>
+                        <td className="py-4 px-6 text-gov-muted font-mono">{m.meetingDate}</td>
+                        <td className="py-4 px-6 text-center">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${getStatusStyle(m.status)}`}>
+                            {m.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-center font-semibold text-gov-muted">
+                          {m.sessionsCount} sessions
+                        </td>
+                        <td className="py-4 px-6 text-right font-mono font-semibold text-gov-success">
+                          {curSessStr}
+                        </td>
+                        <td className="py-4 px-6 text-right font-mono font-semibold text-gov-primaryLight">
+                          {formatSeconds(liveSec)}
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-gov-text">
+                          {pct}%
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button
+                            onClick={() => setSelectedStudentForHistory(m)}
+                            className="px-3 py-1 bg-gov-dark border border-gov-border rounded hover:bg-slate-700 text-gov-text text-[10px] font-bold uppercase transition flex items-center gap-1 mx-auto"
+                          >
+                            <History className="w-3 h-3" />
+                            <span>Logs</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="py-8 text-center text-gov-muted italic">
+                      No active classrooms or logged sessions found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Timeline modal */}
+        {selectedStudentForHistory && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
+              <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <History className="w-5 h-5 text-gov-primaryLight" />
+                  <h4 className="font-bold text-sm text-gov-text uppercase tracking-wide">
+                    Timestamps: {selectedStudentForHistory.meetingName || selectedStudentForHistory.name}
+                  </h4>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setSelectedStudentForHistory(null)}
+                  className="text-gov-muted hover:text-gov-text"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4 max-h-[300px] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gov-border/30 text-xs">
+                  <div>
+                    <span className="text-gov-muted block uppercase font-bold text-[9px]">Total Time</span>
+                    <span className="text-md font-bold text-gov-primaryLight">
+                      {formatSeconds(getStudentLiveSecs(selectedStudentForHistory))}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gov-muted block uppercase font-bold text-[9px]">Total Sessions</span>
+                    <span className="text-md font-bold text-gov-success">
+                      {selectedStudentForHistory.sessionsCount} sessions
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {selectedStudentForHistory.sessions && selectedStudentForHistory.sessions.length > 0 ? (
+                    selectedStudentForHistory.sessions.map((sess, idx) => {
+                      let duration = sess.durationSeconds || 0;
+                      if (sess.status === 'Active') {
+                        duration = Math.max(0, Math.floor((Date.now() - new Date(sess.joinTime)) / 1000));
+                      }
+                      return (
+                        <div key={idx} className="flex justify-between items-center text-xs p-3 bg-gov-dark border border-gov-border rounded">
+                          <div>
+                            <span className="font-bold text-gov-text">Session {selectedStudentForHistory.sessions.length - idx}</span>
+                            <p className="text-[10px] text-gov-muted mt-0.5 font-mono">
+                              Join: {new Date(sess.joinTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                              <br />
+                              Leave: {sess.leaveTime ? new Date(sess.leaveTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Active...'}
+                            </p>
+                          </div>
+                          <span className="font-bold text-gov-primaryLight font-mono">
+                            {formatSeconds(duration)}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-xs text-gov-muted italic text-center py-4">No sessions logged.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 bg-gov-dark/50 border-t border-gov-border flex justify-end">
+                <button
+                  onClick={() => setSelectedStudentForHistory(null)}
+                  className="px-4 py-2 rounded bg-gov-border text-gov-muted hover:bg-slate-700 text-xs font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Determine meeting target duration in minutes for Admin view
+  const selectedMeeting = meetings.find(m => m.id === selectMeetingId) || meetings[0] || mockMeetings[0];
   const meetingDurationMinutes = selectedMeeting.id === 'meet-001' ? 90 : 150;
 
-  // Filter & Search logic
+  // Filter & Search logic for Admin view
   const filteredList = attendanceList.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           student.role.toLowerCase().includes(searchTerm.toLowerCase());
@@ -134,7 +413,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return matchesSearch && matchesStatus;
   });
 
-  // Sort logic (by live ticking duration)
+  // Sort logic (by live ticking duration) for Admin view
   const sortedList = [...filteredList].sort((a, b) => {
     const durA = getLiveDurationSeconds(a);
     const durB = getLiveDurationSeconds(b);
@@ -151,7 +430,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     setActiveTab('reports');
   };
 
-  // Count currently online participants
+  // Count currently online participants for Admin view
   const onlineCount = attendanceList.filter(s => s.status === 'Online').length;
   const uniqueParticipantsCount = attendanceList.length;
   
@@ -362,7 +641,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                 })
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-8 text-center text-gov-muted italic">
+                  <td colSpan="8" className="py-8 text-center text-gov-muted italic">
                     No matching attendance logs found.
                   </td>
                 </tr>
