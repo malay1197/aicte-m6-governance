@@ -126,4 +126,16 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
+// 9. POST /api/meetings/:meetingId/attendance/update-name
+router.post('/:meetingId/attendance/update-name', authMiddleware, async (req, res) => {
+  const { meetingId } = req.params;
+  const { userId, name } = req.body;
+  try {
+    await db.updateParticipantName(meetingId, userId, name);
+    res.json({ success: true, message: 'Participant name updated successfully in database.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update participant name', message: err.message });
+  }
+});
+
 module.exports = router;

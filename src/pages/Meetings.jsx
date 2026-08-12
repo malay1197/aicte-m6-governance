@@ -187,7 +187,7 @@ export default function Meetings({ user }) {
           try {
             const startRes = await api.startAttendance(activeCallMeeting.id, {
               userId: user ? user.username : 'admin_aicte',
-              name: user ? user.name : 'Dr. Abhay Jere',
+              name: user ? `${user.name} (${user.role})` : 'admin_aicte (Compliance Officer)',
               email: user ? user.email : 'abhay.jere@aicte-india.org',
               jitsiRoomName: options.roomName
             }, user || { username: 'admin_aicte', role: 'Admin' });
@@ -219,6 +219,20 @@ export default function Meetings({ user }) {
           console.log('Jitsi conference left. Finalizing session logs.');
           await cleanupSession();
           setActiveCallMeeting(null);
+        });
+
+        apiInstance.addEventListener('displayNameChange', async (event) => {
+          if (event.id === 'local') {
+            console.log('Jitsi display name changed to:', event.displayname);
+            try {
+              await api.updateAttendanceName(activeCallMeeting.id, {
+                userId: user ? user.username : 'admin_aicte',
+                name: event.displayname
+              }, user || { username: 'admin_aicte', role: 'Admin' });
+            } catch (err) {
+              console.error('Failed to sync display name change to backend:', err);
+            }
+          }
         });
 
       } catch (err) {

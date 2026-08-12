@@ -606,5 +606,21 @@ Return ONLY raw JSON. Do not write any markdown code blocks, backticks, or forma
     localMeetings.unshift(meeting);
     localStorage.setItem('local_meetings', JSON.stringify(localMeetings));
     return { success: true, meeting };
+  },
+
+  async updateAttendanceName(meetingId, body, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      await fetch(`${BASE_URL}/meetings/${meetingId}/attendance/update-name`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authVal
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (e) {
+      console.warn("Backend offline. Updating name locally.");
+    }
   }
 };

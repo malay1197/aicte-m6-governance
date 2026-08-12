@@ -835,9 +835,20 @@ const db = {
 
     if (useSupabase) {
       try {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
+
         await supabase
           .from('users')
-          .upsert({ id: userId, name, email, role: 'Student' }, { onConflict: 'id' });
+          .upsert({ 
+            id: userId, 
+            name, 
+            email, 
+            role: existingUser ? existingUser.role : 'Student' 
+          }, { onConflict: 'id' });
 
         const { data: activeSession } = await supabase
           .from('attendance_sessions')
@@ -889,6 +900,9 @@ const db = {
       if (!user) {
         user = { id: userId, name, email, role: 'Student' };
         data.users.push(user);
+      } else {
+        user.name = name;
+        user.email = email;
       }
 
       const activeSession = data.attendanceSessions.find(s => 
@@ -933,7 +947,7 @@ const db = {
     await pgPool.query(`
       INSERT INTO users (id, name, email, role) 
       VALUES ($1, $2, $3, $4)
-      ON CONFLICT (id) DO NOTHING
+      ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, email = EXCLUDED.email
     `, [userId, name, email, 'Student']);
 
     const activeCheck = await pgPool.query(`
@@ -1496,6 +1510,31 @@ const db = {
       m.createdBy || 'admin_aicte'
     ]);
     return rows[0];
+  },
+
+  async updateParticipantName(meetingId, userId, newName) {
+    if (useSupabase) {
+      try {
+        await supabase
+          .from('users')
+          .update({ name: newName })
+          .eq('id', userId);
+        return { success: true };
+      } catch (err) {
+        console.error('Supabase updateParticipantName failed:', err);
+      }
+    }
+    if (useFallback) {
+      const data = readLocalFile();
+      const user = data.users.find(u => u.id === userId);
+      if (user) {
+        user.name = newName;
+        writeLocalFile(data);
+      }
+      return { success: true };
+    }
+    await pgPool.query('UPDATE users SET name = $1 WHERE id = $2', [newName, userId]);
+    return { success: true };
   }
 };
 
