@@ -1,9 +1,12 @@
 const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
 const DB_FILE = path.join(__dirname, 'db.json');
 let pgPool = null;
+let supabase = null;
+let useSupabase = false;
 let useFallback = false;
 
 // Baseline seed data to initialize both Postgres and JSON file
@@ -122,6 +125,16 @@ const baselineSeed = {
 
 // Initialize connection
 function initDb() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SECRET_KEY;
+  
+  if (supabaseUrl && supabaseKey) {
+    console.log('Supabase credentials found. Initializing connection to hosted Postgres state.');
+    supabase = createClient(supabaseUrl, supabaseKey);
+    useSupabase = true;
+    return Promise.resolve();
+  }
+
   const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/aicte_m6';
   
   pgPool = new Pool({
@@ -167,6 +180,28 @@ const db = {
 
   // --- Audit Logs ---
   async getAuditLogs() {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data.map(r => ({
+          id: r.id,
+          timestamp: new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19),
+          user: r.actor_username,
+          action: r.action,
+          module: r.module_name,
+          ip: r.ip_address,
+          status: r.status,
+          severity: r.severity_level,
+          details: r.details
+        }));
+      } catch (err) {
+        console.error('Supabase query failed, falling back.', err);
+      }
+    }
     if (useFallback) {
       return readLocalFile().auditLogs;
     }
@@ -185,6 +220,27 @@ const db = {
   },
 
   async addAuditLog(log) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .insert({
+            actor_username: log.user,
+            action: log.action,
+            module_name: log.module,
+            ip_address: log.ip || '127.0.0.1',
+            status: log.status || 'Success',
+            severity_level: log.severity || 'INFO',
+            details: log.details || ''
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase insertion failed, falling back.', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const newLog = {
@@ -213,6 +269,49 @@ const db = {
 
   // --- Attendance ---
   async getAttendance() {
+    if (useSupabase) {
+      try {
+        const { data: meetings, error: mErr } = await supabase
+          .from('meetings')
+          .select('*')
+          .order('scheduled_start', { ascending: false });
+        if (mErr) throw mErr;
+        
+        const finalMeetings = [];
+        for (let m of meetings) {
+          const { data: participants, error: pErr } = await supabase
+            .from('attendance')
+            .select('*')
+            .eq('meeting_id', m.id);
+          
+          const parts = participants || [];
+          finalMeetings.push({
+            id: m.id,
+            name: m.title,
+            date: new Date(m.scheduled_start).toISOString().split('T')[0],
+            startTime: new Date(m.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            endTime: new Date(m.scheduled_end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            totalParticipants: parts.length,
+            present: parts.filter(p => p.attendance_status === 'Present').length,
+            absent: parts.filter(p => p.attendance_status === 'Absent').length,
+            late: parts.filter(p => p.attendance_status === 'Late').length,
+            status: m.status,
+            participants: parts.map(p => ({
+              id: p.id,
+              name: p.participant_name,
+              role: p.official_role,
+              joinTime: p.join_time ? new Date(p.join_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--',
+              leaveTime: p.leave_time ? new Date(p.leave_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--',
+              duration: `${p.duration_minutes} min`,
+              status: p.attendance_status
+            }))
+          });
+        }
+        return finalMeetings;
+      } catch (err) {
+        console.error('Supabase getAttendance failed:', err);
+      }
+    }
     if (useFallback) {
       return readLocalFile().meetings;
     }
@@ -247,6 +346,27 @@ const db = {
   },
 
   async addParticipantAttendance(meetingId, record) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('attendance')
+          .insert({
+            meeting_id: meetingId,
+            participant_name: record.name,
+            official_role: record.role,
+            join_time: record.joinTime ? new Date(record.joinTime).toISOString() : null,
+            leave_time: record.leaveTime ? new Date(record.leaveTime).toISOString() : null,
+            duration_minutes: record.duration ? parseInt(record.duration) : 0,
+            attendance_status: record.status
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase addParticipantAttendance failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const m = data.meetings.find(x => x.id === meetingId);
@@ -279,6 +399,23 @@ const db = {
 
   // --- Reports ---
   async getReports() {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('compliance_reports')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data.map(r => ({
+          id: r.report_number,
+          type: r.report_type,
+          timestamp: r.created_at,
+          hash: r.blockchain_ledger_hash
+        }));
+      } catch (err) {
+        console.error('Supabase getReports failed:', err);
+      }
+    }
     if (useFallback) {
       return readLocalFile().reports;
     }
@@ -292,6 +429,26 @@ const db = {
   },
 
   async addReport(report) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('compliance_reports')
+          .insert({
+            report_number: report.id,
+            report_type: report.type,
+            compiled_by_username: 'admin_aicte',
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: new Date().toISOString().split('T')[0],
+            blockchain_ledger_hash: report.hash
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase addReport failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       data.reports.unshift(report);
@@ -309,6 +466,25 @@ const db = {
 
   // --- Notifications ---
   async getNotifications() {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data.map(r => ({
+          id: r.id,
+          message: r.message,
+          timestamp: new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19),
+          priority: r.priority_level,
+          read: r.is_read,
+          type: r.notification_type
+        }));
+      } catch (err) {
+        console.error('Supabase getNotifications failed:', err);
+      }
+    }
     if (useFallback) {
       return readLocalFile().notifications;
     }
@@ -324,6 +500,31 @@ const db = {
   },
 
   async addNotification(notif) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .insert({
+            message: notif.message,
+            priority_level: notif.priority || 'MEDIUM',
+            notification_type: notif.type || 'reminder',
+            is_read: false
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return {
+          id: data.id,
+          message: data.message,
+          timestamp: new Date(data.created_at).toISOString().replace('T', ' ').substring(0, 19),
+          priority: data.priority_level,
+          read: data.is_read,
+          type: data.notification_type
+        };
+      } catch (err) {
+        console.error('Supabase addNotification failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const newNotif = {
@@ -347,6 +548,27 @@ const db = {
   },
 
   async markNotificationRead(id) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return {
+          id: data.id,
+          message: data.message,
+          timestamp: new Date(data.created_at).toISOString().replace('T', ' ').substring(0, 19),
+          priority: data.priority_level,
+          read: data.is_read,
+          type: data.notification_type
+        };
+      } catch (err) {
+        console.error('Supabase markNotificationRead failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const n = data.notifications.find(x => x.id === id);
@@ -362,6 +584,27 @@ const db = {
 
   // --- Security Events ---
   async getSecurityEvents() {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .or("severity_level.eq.CRITICAL,action.eq.Security Warning")
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data.map(r => ({
+          id: r.id,
+          title: r.action,
+          description: r.details,
+          timestamp: new Date(r.created_at).toISOString().replace('T', ' ').substring(0, 19),
+          severity: r.severity_level,
+          status: r.status === 'Triggered' ? 'Active' : 'Resolved',
+          details: r.details
+        }));
+      } catch (err) {
+        console.error('Supabase getSecurityEvents failed:', err);
+      }
+    }
     if (useFallback) {
       return readLocalFile().securityEvents;
     }
@@ -379,6 +622,21 @@ const db = {
   },
 
   async updateSecurityEvent(id, status) {
+    if (useSupabase) {
+      try {
+        const pgStatus = status === 'Resolved' ? 'Resolved' : 'Triggered';
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .update({ status: pgStatus })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase updateSecurityEvent failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const sec = data.securityEvents.find(x => x.id === id);
@@ -388,7 +646,6 @@ const db = {
       }
       return sec;
     }
-    // Update matching record status in audit_logs
     const pgStatus = status === 'Resolved' ? 'Resolved' : 'Triggered';
     const { rows } = await pgPool.query('UPDATE audit_logs SET status = $1 WHERE id = $2 RETURNING *', [pgStatus, id]);
     return rows[0];
@@ -396,10 +653,52 @@ const db = {
 
   // --- Search Memory (With Database-level RBAC) ---
   async searchMemory(query, category, role) {
+    if (useSupabase) {
+      try {
+        let queryBuilder = supabase
+          .from('institutional_memory')
+          .select('*');
+        
+        if (category && category !== 'All') {
+          queryBuilder = queryBuilder.eq('category', category);
+        }
+        
+        const { data, error } = await queryBuilder;
+        if (error) throw error;
+        
+        let results = data.filter(r => r.authorized_roles && r.authorized_roles.includes(role));
+        
+        if (query) {
+          const q = query.toLowerCase();
+          results = results.filter(r => 
+            r.title.toLowerCase().includes(q) || 
+            (r.summary && r.summary.toLowerCase().includes(q))
+          );
+        }
+        
+        return results.map(r => ({
+          id: r.id,
+          title: r.title,
+          category: r.category,
+          date: r.record_date,
+          relevance: 95,
+          details: {
+            summary: r.summary,
+            decision: r.decision_details,
+            actionItems: r.action_items,
+            blockchainHash: r.blockchain_hash,
+            authorizedRoles: r.authorized_roles,
+            documents: r.documents_list,
+            aiHighlights: r.ai_transcript_segment
+          }
+        }));
+      } catch (err) {
+        console.error('Supabase searchMemory failed:', err);
+      }
+    }
     if (useFallback) {
       let results = readLocalFile().memory;
       
-      // Enforce Role-Based Access Control (RBAC)
       results = results.filter(r => r.details.authorizedRoles.includes(role));
 
       if (category && category !== 'All') {
@@ -437,6 +736,15 @@ const db = {
     const { rows } = await pgPool.query(sql, params);
     
     return rows.map(r => ({
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      date: r.record_date ? (typeof r.record_date === 'string' ? r.record_date : r.record_date.toISOString().split('T')[0]) : '',
+      relevance: Math.round((r.rank || 0.1) * 100),
+      details: {
+        summary: r.summary,
+        decision: r.decision_details,
+        actionItems: r.action_items,
         blockchainHash: r.blockchain_hash,
         authorizedRoles: r.authorized_roles,
         documents: r.documents_list,
@@ -446,6 +754,19 @@ const db = {
   },
 
   async getUser(id) {
+    if (useSupabase) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase getUser failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       return data.users.find(u => u.id === id) || null;
@@ -455,6 +776,37 @@ const db = {
   },
 
   async isUserAllowedInMeeting(meetingId, userId) {
+    if (useSupabase) {
+      try {
+        const user = await this.getUser(userId);
+        if (user && user.role === 'Admin') return true;
+        
+        const { data, error } = await supabase
+          .from('meeting_participants')
+          .select('*')
+          .eq('meeting_id', meetingId)
+          .eq('user_id', userId)
+          .eq('allowed', true)
+          .maybeSingle();
+        
+        if (error) return false;
+        if (data) return true;
+        
+        // If it is a generic/evaluation meeting, default allow
+        const { data: meeting } = await supabase
+          .from('meetings')
+          .select('id')
+          .eq('id', meetingId)
+          .maybeSingle();
+        
+        if (meeting && meeting.id !== '00000000-0000-0000-0000-000000000001') {
+          return true;
+        }
+        return false;
+      } catch (err) {
+        console.error('Supabase isUserAllowedInMeeting failed:', err);
+      }
+    }
     const user = await this.getUser(userId);
     if (user && user.role === 'Admin') return true;
 
@@ -480,6 +832,56 @@ const db = {
   async startAttendanceSession(meetingId, userId, name, email, jitsiRoomName) {
     const now = new Date();
     const sessionId = `sess-${Date.now()}`;
+
+    if (useSupabase) {
+      try {
+        await supabase
+          .from('users')
+          .upsert({ id: userId, name, email, role: 'Student' }, { onConflict: 'id' });
+
+        const { data: activeSession } = await supabase
+          .from('attendance_sessions')
+          .select('*')
+          .eq('meeting_id', meetingId)
+          .eq('user_id', userId)
+          .eq('status', 'Active')
+          .gt('last_heartbeat', new Date(now - 45000).toISOString())
+          .maybeSingle();
+
+        if (activeSession) {
+          await supabase
+            .from('attendance_sessions')
+            .update({ last_heartbeat: now.toISOString(), updated_at: now.toISOString() })
+            .eq('id', activeSession.id);
+          return { sessionId: activeSession.session_id };
+        }
+
+        await supabase
+          .from('attendance_sessions')
+          .update({ status: 'Completed', leave_time: now.toISOString() })
+          .eq('meeting_id', meetingId)
+          .eq('user_id', userId)
+          .eq('status', 'Active');
+
+        const { data: newSession, error: createErr } = await supabase
+          .from('attendance_sessions')
+          .insert({
+            meeting_id: meetingId,
+            user_id: userId,
+            session_id: sessionId,
+            join_time: now.toISOString(),
+            status: 'Active',
+            last_heartbeat: now.toISOString()
+          })
+          .select()
+          .single();
+        
+        if (createErr) throw createErr;
+        return { sessionId: newSession.session_id };
+      } catch (err) {
+        console.error('Supabase startAttendanceSession failed:', err);
+      }
+    }
 
     if (useFallback) {
       const data = readLocalFile();
@@ -563,6 +965,36 @@ const db = {
 
   async heartbeatAttendanceSession(sessionId) {
     const now = new Date();
+    if (useSupabase) {
+      try {
+        const { data: sess } = await supabase
+          .from('attendance_sessions')
+          .select('join_time')
+          .eq('session_id', sessionId)
+          .maybeSingle();
+
+        let duration = 0;
+        if (sess) {
+          duration = Math.max(0, Math.floor((now - new Date(sess.join_time)) / 1000));
+        }
+
+        const { data, error } = await supabase
+          .from('attendance_sessions')
+          .update({
+            last_heartbeat: now.toISOString(),
+            leave_time: now.toISOString(),
+            duration_seconds: duration,
+            updated_at: now.toISOString()
+          })
+          .eq('session_id', sessionId)
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase heartbeatAttendanceSession failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const session = data.attendanceSessions.find(s => s.sessionId === sessionId);
@@ -587,6 +1019,36 @@ const db = {
 
   async endAttendanceSession(sessionId) {
     const now = new Date();
+    if (useSupabase) {
+      try {
+        const { data: sess } = await supabase
+          .from('attendance_sessions')
+          .select('join_time')
+          .eq('session_id', sessionId)
+          .maybeSingle();
+
+        let duration = 0;
+        if (sess) {
+          duration = Math.max(0, Math.floor((now - new Date(sess.join_time)) / 1000));
+        }
+
+        const { data, error } = await supabase
+          .from('attendance_sessions')
+          .update({
+            status: 'Completed',
+            leave_time: now.toISOString(),
+            duration_seconds: duration,
+            updated_at: now.toISOString()
+          })
+          .eq('session_id', sessionId)
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error('Supabase endAttendanceSession failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const session = data.attendanceSessions.find(s => s.sessionId === sessionId);
@@ -610,6 +1072,35 @@ const db = {
   },
 
   async sweepOrphanedSessions() {
+    if (useSupabase) {
+      try {
+        const now = new Date();
+        const { data: activeOld } = await supabase
+          .from('attendance_sessions')
+          .select('*')
+          .eq('status', 'Active')
+          .lt('last_heartbeat', new Date(now - 35000).toISOString());
+
+        if (activeOld && activeOld.length > 0) {
+          for (let s of activeOld) {
+            const duration = Math.max(0, Math.floor((new Date(s.last_heartbeat) - new Date(s.join_time)) / 1000));
+            await supabase
+              .from('attendance_sessions')
+              .update({
+                status: 'Completed',
+                leave_time: s.last_heartbeat,
+                duration_seconds: duration,
+                updated_at: now.toISOString()
+              })
+              .eq('id', s.id);
+            console.log(`Swept orphaned Supabase session ${s.session_id}`);
+          }
+        }
+        return;
+      } catch (err) {
+        console.error('Supabase sweepOrphanedSessions failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const now = new Date();
@@ -641,6 +1132,57 @@ const db = {
   },
 
   async getMeetingAttendanceDetails(meetingId) {
+    if (useSupabase) {
+      try {
+        const { data: sessions, error } = await supabase
+          .from('attendance_sessions')
+          .select(`
+            session_id,
+            join_time,
+            leave_time,
+            duration_seconds,
+            status,
+            user_id,
+            users (
+              name,
+              role
+            )
+          `)
+          .eq('meeting_id', meetingId);
+
+        if (error) throw error;
+        
+        const userGroup = {};
+        sessions.forEach(s => {
+          const u = s.users || { name: s.user_id, role: 'Student' };
+          if (!userGroup[s.user_id]) {
+            userGroup[s.user_id] = {
+              userId: s.user_id,
+              name: u.name,
+              role: u.role,
+              sessionsCount: 0,
+              totalDurationSeconds: 0,
+              status: 'Offline',
+              sessions: []
+            };
+          }
+          userGroup[s.user_id].sessionsCount++;
+          userGroup[s.user_id].totalDurationSeconds += s.duration_seconds;
+          userGroup[s.user_id].sessions.push({
+            joinTime: s.join_time,
+            leaveTime: s.leave_time,
+            durationSeconds: s.duration_seconds,
+            status: s.status
+          });
+          if (s.status === 'Active') {
+            userGroup[s.user_id].status = 'Online';
+          }
+        });
+        return Object.values(userGroup);
+      } catch (err) {
+        console.error('Supabase getMeetingAttendanceDetails failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const sessions = data.attendanceSessions.filter(s => s.meetingId === meetingId);
@@ -713,6 +1255,66 @@ const db = {
   },
 
   async getUserMeetingAttendanceDetails(meetingId, userId) {
+    if (useSupabase) {
+      try {
+        const { data: sessions, error } = await supabase
+          .from('attendance_sessions')
+          .select(`
+            session_id,
+            join_time,
+            leave_time,
+            duration_seconds,
+            status,
+            users (
+              name,
+              email,
+              role
+            )
+          `)
+          .eq('meeting_id', meetingId)
+          .eq('user_id', userId);
+
+        if (error) throw error;
+        
+        const user = await this.getUser(userId);
+
+        if (!sessions || sessions.length === 0) {
+          return {
+            userId,
+            name: user ? user.name : userId,
+            email: user ? user.email : '',
+            role: user ? user.role : 'Student',
+            totalDurationSeconds: 0,
+            sessionsCount: 0,
+            status: 'Offline',
+            sessions: []
+          };
+        }
+
+        const u = sessions[0].users || { name: userId, email: '', role: 'Student' };
+        const totalSec = sessions.reduce((acc, s) => acc + s.duration_seconds, 0);
+        const activeSession = sessions.find(s => s.status === 'Active');
+
+        return {
+          userId,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          totalDurationSeconds: totalSec,
+          sessionsCount: sessions.length,
+          status: activeSession ? 'Online' : 'Offline',
+          sessions: sessions.map(s => ({
+            sessionId: s.session_id,
+            joinTime: s.join_time,
+            leaveTime: s.leave_time,
+            durationSeconds: s.duration_seconds,
+            status: s.status
+          }))
+        };
+      } catch (err) {
+        console.error('Supabase getUserMeetingAttendanceDetails failed:', err);
+      }
+    }
     if (useFallback) {
       const data = readLocalFile();
       const sessions = data.attendanceSessions.filter(s => s.meetingId === meetingId && s.userId === userId);
