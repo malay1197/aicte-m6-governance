@@ -64,9 +64,9 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
   const warningCount = securityEvents.filter(e => e.severity === 'WARNING').length;
 
   const severityPieData = [
-    { name: 'Critical Alerts', value: criticalCount, color: '#ef4444' },
-    { name: 'Warnings', value: warningCount, color: '#f59e0b' },
-    { name: 'Info / Audit', value: securityEvents.filter(e => e.severity === 'INFO').length, color: '#3b82f6' }
+    { name: 'Critical Alerts', value: criticalCount, color: '#D92D20' },
+    { name: 'Warnings', value: warningCount, color: '#F79009' },
+    { name: 'Info / Audit', value: securityEvents.filter(e => e.severity === 'INFO').length, color: '#155EEF' }
   ];
 
   const handleResolveEvent = async (id) => {
@@ -114,14 +114,14 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={attendanceTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e294b" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={10} domain={[0, 100]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gov-border)" />
+                <XAxis dataKey="name" stroke="var(--color-gov-muted)" fontSize={10} tickLine={false} />
+                <YAxis stroke="var(--color-gov-muted)" fontSize={10} domain={[0, 100]} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#131c31', borderColor: '#1e294b', color: '#f8fafc' }}
-                  labelStyle={{ color: '#94a3b8', fontWeight: 'bold' }} 
+                  contentStyle={{ backgroundColor: 'var(--color-gov-card)', borderColor: 'var(--color-gov-border)', color: 'var(--color-gov-text)' }}
+                  labelStyle={{ color: 'var(--color-gov-muted)', fontWeight: 'bold' }} 
                 />
-                <Line type="monotone" dataKey="rate" stroke="#3b82f6" strokeWidth={3} activeDot={{ r: 8 }} name="Attendance %" />
+                <Line type="monotone" dataKey="rate" stroke="#155EEF" strokeWidth={3} activeDot={{ r: 8 }} name="Attendance %" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -147,7 +147,7 @@ export default function Dashboard({ setActiveTab, setSelectMeetingId, securityEv
                   ))}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#131c31', borderColor: '#1e294b', color: '#f8fafc' }}
+                  contentStyle={{ backgroundColor: 'var(--color-gov-card)', borderColor: 'var(--color-gov-border)', color: 'var(--color-gov-text)' }}
                 />
               </PieChart>
             </ResponsiveContainer>
