@@ -72,8 +72,8 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
     return result;
   };
 
-  // Assume meeting duration is 60 minutes for student compliance percentage
-  const meetingDurationMinutes = 60;
+  // Determine meeting target duration in minutes
+  const meetingDurationMinutes = selectedMeeting.id === 'meet-001' ? 90 : 150;
 
   // Filter & Search logic
   const filteredList = attendanceList.filter(student => {
@@ -104,6 +104,14 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
 
   // Count currently online participants
   const onlineCount = attendanceList.filter(s => s.status === 'Online').length;
+  const uniqueParticipantsCount = attendanceList.length;
+  
+  const avgAttendancePct = attendanceList.length > 0
+    ? Math.round(attendanceList.reduce((acc, curr) => {
+        const pct = Math.min(100, Math.round((curr.totalDurationSeconds / (meetingDurationMinutes * 60)) * 100));
+        return acc + pct;
+      }, 0) / attendanceList.length)
+    : 0;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -182,6 +190,26 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
         </div>
       </div>
 
+      {/* Meeting-level Cumulative Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="gov-card p-4 text-center border-gov-border/60">
+          <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Meeting Duration</span>
+          <span className="text-sm font-bold text-gov-text mt-1.5 block">{meetingDurationMinutes} minutes</span>
+        </div>
+        <div className="gov-card p-4 text-center border-gov-border/60">
+          <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Total Participants</span>
+          <span className="text-sm font-bold text-gov-primaryLight mt-1.5 block">{attendanceList.length}</span>
+        </div>
+        <div className="gov-card p-4 text-center border-gov-border/60">
+          <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Unique Participants</span>
+          <span className="text-sm font-bold text-gov-success mt-1.5 block">{uniqueParticipantsCount}</span>
+        </div>
+        <div className="gov-card p-4 text-center border-gov-border/60">
+          <span className="text-[10px] text-gov-muted block uppercase font-bold tracking-wider">Average Attendance</span>
+          <span className="text-sm font-bold text-gov-warning mt-1.5 block">{avgAttendancePct}%</span>
+        </div>
+      </div>
+
       {/* Search and Filters Table */}
       <div className="gov-card p-0 overflow-hidden">
         {/* Table Filters Header */}
@@ -219,17 +247,17 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-gov-dark/50 text-gov-muted font-bold border-b border-gov-border">
-                <th className="py-4 px-6">Student / Member</th>
+                <th className="py-4 px-6">Participant</th>
                 <th className="py-4 px-6">Role</th>
                 <th className="py-4 px-6 text-center">Status</th>
                 <th className="py-4 px-6 cursor-pointer select-none" onClick={toggleSort}>
                   <div className="flex items-center gap-1 justify-end">
-                    <span>Total Duration</span>
+                    <span>Total Time</span>
                     <ArrowUpDown className="w-3.5 h-3.5 text-gov-muted" />
                   </div>
                 </th>
                 <th className="py-4 px-6 text-right">Attendance %</th>
-                <th className="py-4 px-6 text-center">Sessions</th>
+                <th className="py-4 px-6 text-center">Join Sessions</th>
                 <th className="py-4 px-6 text-center">Action</th>
               </tr>
             </thead>
@@ -253,7 +281,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
                         {pct}%
                       </td>
                       <td className="py-4 px-6 text-center font-semibold text-gov-muted">
-                        {student.sessionsCount}
+                        {student.sessionsCount} sessions
                       </td>
                       <td className="py-4 px-6 text-center">
                         <button
@@ -279,11 +307,10 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
         </div>
       </div>
 
-      {/* 4. Session History details Modal */}
+      {/* Session History details Modal */}
       {selectedStudentForHistory && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
-            {/* Modal Header */}
             <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-gov-primaryLight" />
@@ -300,11 +327,10 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
               </button>
             </div>
 
-            {/* Modal Body: session lists */}
             <div className="p-6 space-y-4 max-h-[300px] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gov-border/30 text-xs">
                 <div>
-                  <span className="text-gov-muted block uppercase font-bold text-[9px]">Total Duration</span>
+                  <span className="text-gov-muted block uppercase font-bold text-[9px]">Total Time</span>
                   <span className="text-md font-bold text-gov-primaryLight">
                     {formatSeconds(selectedStudentForHistory.totalDurationSeconds)}
                   </span>
@@ -340,7 +366,6 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="p-4 bg-gov-dark/50 border-t border-gov-border flex justify-end">
               <button
                 onClick={() => setSelectedStudentForHistory(null)}

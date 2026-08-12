@@ -21,7 +21,9 @@ import {
   CheckCircle2,
   FileText,
   AlertTriangle,
-  History
+  History,
+  Copy,
+  Check
 } from 'lucide-react';
 import { mockMeetings } from '../utils/mockData';
 import { api } from '../utils/api';
@@ -31,6 +33,7 @@ export default function Meetings({ user }) {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [activeCallMeeting, setActiveCallMeeting] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [copiedMeetingId, setCopiedMeetingId] = useState(null);
   
   // Choose between live Jitsi frame and visual simulation
   const [mode, setMode] = useState('jitsi'); // 'jitsi' | 'simulation'
@@ -71,12 +74,34 @@ export default function Meetings({ user }) {
     try {
       const allMeetings = await api.getAttendance(); // Fetch from server
       setMeetings(allMeetings);
+      
+      // Auto-join meeting if meetingId query parameter is present
+      const params = new URLSearchParams(window.location.search);
+      const urlMeetingId = params.get('meetingId');
+      if (urlMeetingId) {
+        const match = allMeetings.find(m => m.id === urlMeetingId);
+        if (match && !activeCallMeeting) {
+          startMeetingSecure(match);
+        }
+      }
+
       if (allMeetings.length > 0) {
         setSelectedMeetingForStats(allMeetings[0]);
       }
     } catch (err) {
       console.warn("Failed to load meetings from server. Loading mock data.");
       setMeetings(mockMeetings);
+      
+      // Auto-join fallback
+      const params = new URLSearchParams(window.location.search);
+      const urlMeetingId = params.get('meetingId');
+      if (urlMeetingId) {
+        const match = mockMeetings.find(m => m.id === urlMeetingId);
+        if (match && !activeCallMeeting) {
+          startMeetingSecure(match);
+        }
+      }
+
       if (mockMeetings.length > 0) {
         setSelectedMeetingForStats(mockMeetings[0]);
       }
@@ -219,7 +244,7 @@ export default function Meetings({ user }) {
           xhr.open('POST', url, false);
           xhr.setRequestHeader('Content-Type', 'application/json');
           xhr.setRequestHeader('Authorization', `Bearer ${user ? user.username : 'admin_aicte'}:${user ? user.role : 'Admin'}`);
-          xhr.send(payload);
+          sendBeaconPolyfill(url, payload);
         }
       }
     };
@@ -234,6 +259,16 @@ export default function Meetings({ user }) {
       }
     };
   }, [activeCallMeeting, mode]);
+
+  const sendBeaconPolyfill = (url, payload) => {
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url, false);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', `Bearer ${user ? user.username : 'admin_aicte'}:${user ? user.role : 'Admin'}`);
+      xhr.send(payload);
+    } catch(e) {}
+  };
 
   const cleanupSession = async () => {
     if (heartbeatIntervalRef.current) {
@@ -271,7 +306,6 @@ export default function Meetings({ user }) {
       ]
     };
 
-    // Save report generation details locally or trigger backend call
     try {
       await api.generateReport('Meeting Created', newMeeting.id, newMeeting.date);
     } catch(err) {
@@ -290,7 +324,6 @@ export default function Meetings({ user }) {
   const startMeetingSecure = async (meeting) => {
     setErrorMsg('');
     try {
-      // Call join meeting validator check
       const checkRes = await api.joinMeeting(meeting.id, user || { username: 'admin_aicte', role: 'Admin' });
       if (checkRes.success) {
         setActiveCallMeeting(meeting);
@@ -310,6 +343,14 @@ export default function Meetings({ user }) {
     }
     setActiveCallMeeting(null);
     fetchMeetings(); // reload stats
+  };
+
+  const copyShareableLink = (meetingId) => {
+    const link = `${window.location.origin}${window.location.pathname}?meetingId=${meetingId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedMeetingId(meetingId);
+      setTimeout(() => setCopiedMeetingId(null), 2000);
+    });
   };
 
   const getSensitivityBadge = (level) => {
@@ -344,7 +385,6 @@ export default function Meetings({ user }) {
     const activeMeetId = selectedMeetingForStats ? selectedMeetingForStats.id : null;
     const activeStats = activeMeetId ? studentAttendance[activeMeetId] : null;
     
-    // Assume lecture duration is 60 minutes for percentage calculations
     const meetingDurationMinutes = 60;
     const attendancePercentage = activeStats 
       ? Math.min(100, Math.round((activeStats.totalDurationSeconds / (meetingDurationMinutes * 60)) * 100))
@@ -368,7 +408,7 @@ export default function Meetings({ user }) {
           </div>
         )}
 
-        {/* 2. Jitsi Video conference active frame container */}
+        {/* Jitsi Video Frame Panel */}
         {activeCallMeeting ? (
           <div className="gov-card border-gov-primary/40 p-0 overflow-hidden relative shadow-glow-primary">
             <div className="bg-gov-dark p-4 flex items-center justify-between border-b border-gov-border">
@@ -403,13 +443,14 @@ export default function Meetings({ user }) {
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-            {/* Left: Meeting list */}
+            {/* Left Column: Available lectures */}
             <div className="xl:col-span-2 space-y-4">
               <h4 className="text-xs font-bold text-gov-text uppercase tracking-wider block">Available Lectures & Meetings</h4>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {meetings.map((meet) => {
                   const isStatsActive = meet.id === activeMeetId;
+                  const isCopied = copiedMeetingId === meet.id;
                   return (
                     <div 
                       key={meet.id} 
@@ -438,18 +479,31 @@ export default function Meetings({ user }) {
                           {meet.status === 'Completed' ? 'COMPLETED' : 'LIVE'}
                         </span>
                         
-                        {meet.status !== 'Completed' && (
+                        <div className="flex gap-2">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              startMeetingSecure(meet);
+                              copyShareableLink(meet.id);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gov-primary text-white hover:bg-opacity-95 rounded font-semibold text-xs transition shadow-glow-primary cursor-pointer"
+                            className="p-1.5 bg-gov-dark border border-gov-border text-gov-muted hover:text-gov-text rounded transition cursor-pointer"
+                            title="Copy Shareable Link"
                           >
-                            <Video className="w-3.5 h-3.5" />
-                            <span>Join Meeting</span>
+                            {isCopied ? <Check className="w-3.5 h-3.5 text-gov-success" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
-                        )}
+                          
+                          {meet.status !== 'Completed' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startMeetingSecure(meet);
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gov-primary text-white hover:bg-opacity-95 rounded font-semibold text-xs transition shadow-glow-primary cursor-pointer"
+                            >
+                              <Video className="w-3.5 h-3.5" />
+                              <span>Join Meeting</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -457,7 +511,7 @@ export default function Meetings({ user }) {
               </div>
             </div>
 
-            {/* Right: Selected Meeting Attendance Details */}
+            {/* Right Column: Attendance Ratios */}
             <div className="xl:col-span-1 space-y-4">
               <h4 className="text-xs font-bold text-gov-text uppercase tracking-wider block">Attendance Analysis</h4>
               
@@ -468,7 +522,6 @@ export default function Meetings({ user }) {
                     <h4 className="text-xs font-bold text-gov-text mt-1">{selectedMeetingForStats.name}</h4>
                   </div>
 
-                  {/* Stats Grid */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gov-dark p-3 rounded-lg border border-gov-border text-center">
                       <span className="text-[10px] text-gov-muted block font-semibold uppercase">Total Attendance</span>
@@ -485,7 +538,6 @@ export default function Meetings({ user }) {
                     </div>
                   </div>
 
-                  {/* Attendance Percentage Indicator */}
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-semibold text-gov-text">Compliance Percent</span>
@@ -502,7 +554,6 @@ export default function Meetings({ user }) {
                     </p>
                   </div>
 
-                  {/* Session History logs */}
                   <div className="space-y-3 pt-3 border-t border-gov-border/30">
                     <span className="text-[10px] text-gov-text font-bold uppercase flex items-center gap-1.5">
                       <History className="w-4 h-4 text-gov-primaryLight" /> Session logs
@@ -551,7 +602,7 @@ export default function Meetings({ user }) {
   return (
     <div className="space-y-6 animate-fade-in">
       
-      {/* 1. Header Banner */}
+      {/* Header Banner */}
       <div className="gov-card flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h3 className="text-md font-bold text-gov-text">Secured Governance Meetings & Conferencing</h3>
@@ -575,10 +626,9 @@ export default function Meetings({ user }) {
         </div>
       )}
 
-      {/* 2. Main Live Meeting Call View */}
+      {/* Main Jitsi call panel */}
       {activeCallMeeting ? (
         <div className="gov-card border-gov-primary/40 p-0 overflow-hidden relative shadow-glow-primary">
-          {/* Call Header */}
           <div className="bg-gov-dark p-4 flex flex-wrap items-center justify-between border-b border-gov-border gap-4">
             <div className="flex items-center gap-3">
               <span className={`text-[9px] px-2.5 py-0.5 rounded font-extrabold border ${getSensitivityBadge(activeCallMeeting.sensitivity || 'HIGH')}`}>
@@ -588,7 +638,6 @@ export default function Meetings({ user }) {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Toggle Mode */}
               <div className="flex bg-gov-dark border border-gov-border rounded-lg p-0.5 text-[10px]">
                 <button
                   onClick={() => setMode('jitsi')}
@@ -615,17 +664,13 @@ export default function Meetings({ user }) {
             </div>
           </div>
 
-          {/* Jitsi/WebRTC Active Call Canvas */}
           <div className="relative bg-[#0c1224] min-h-[480px]">
             {mode === 'jitsi' && (
-              <div id="jitsi-container" className="w-full min-h-[480px]">
-                {/* Jitsi Meet iframe is injected here */}
-              </div>
+              <div id="jitsi-container" className="w-full min-h-[480px]" />
             )}
 
             {mode === 'simulation' && (
               <div className="grid grid-cols-1 lg:grid-cols-4 min-h-[480px]">
-                {/* Main Video Stream Simulator */}
                 <div className="lg:col-span-3 p-6 flex flex-col justify-between relative">
                   <div className="flex-1 flex items-center justify-center relative bg-[#131b33] border border-gov-border rounded-xl overflow-hidden shadow-inner">
                     {isVideoOff ? (
@@ -642,7 +687,7 @@ export default function Meetings({ user }) {
                         </div>
                         <div className="w-full h-full bg-gradient-to-tr from-slate-950 via-gov-dark to-slate-900 flex items-center justify-center">
                           <div className="text-center space-y-2">
-                            <Video className="w-12 h-12 text-gov-primaryLight opacity-20 animate-pulse animate-pulse-slow" />
+                            <Video className="w-12 h-12 text-gov-primaryLight opacity-20 animate-pulse" />
                             <p className="text-[10px] text-gov-muted">Secure Local Video Node Active</p>
                           </div>
                         </div>
@@ -650,7 +695,6 @@ export default function Meetings({ user }) {
                     )}
                   </div>
 
-                  {/* Micro participants list cards */}
                   <div className="grid grid-cols-3 gap-4 mt-4 h-24">
                     <div className="bg-[#11182c] border border-gov-border/40 rounded-lg flex items-center justify-center relative overflow-hidden">
                       <span className="absolute bottom-1 left-2 text-[9px] text-gov-text font-bold bg-black/40 px-1 rounded">Dr. Anil S.</span>
@@ -667,7 +711,6 @@ export default function Meetings({ user }) {
                   </div>
                 </div>
 
-                {/* Right sidebar details */}
                 <div className="lg:col-span-1 border-l border-gov-border bg-gov-dark/40 p-4 flex flex-col justify-between">
                   <div>
                     <h5 className="text-[10px] text-gov-muted uppercase font-bold tracking-wider mb-3">Participants ({simulatedParticipants.length + 1})</h5>
@@ -696,10 +739,10 @@ export default function Meetings({ user }) {
             )}
           </div>
 
-          {/* Video Control Bar Dashboard */}
+          {/* Call Controls Bar */}
           <div className="bg-gov-card p-4 flex flex-wrap items-center justify-between border-t border-gov-border gap-4">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-gov-danger animate-ping"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-gov-danger animate-ping" />
               <span className="text-xs text-gov-danger font-semibold uppercase">Live Recording Active (M6 Audit Log)</span>
             </div>
 
@@ -734,59 +777,91 @@ export default function Meetings({ user }) {
               </div>
             )}
 
-            <button
-              onClick={leaveMeeting}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gov-danger hover:bg-opacity-90 rounded-lg text-xs font-bold text-white transition shadow-glow-danger cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Terminate Session</span>
-            </button>
+            <div className="flex gap-2">
+              {user && user.role !== 'Student' && (
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Are you sure you want to end this meeting for all participants? This will terminate all active attendee log sessions.')) {
+                      await api.endMeeting(activeCallMeeting.id, user || { username: 'admin_aicte', role: 'Admin' });
+                      await leaveMeeting();
+                    }
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gov-danger hover:bg-opacity-90 rounded-lg text-xs font-bold text-white transition shadow-glow-danger cursor-pointer animate-pulse"
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>End Meeting (For All)</span>
+                </button>
+              )}
+              
+              <button
+                onClick={leaveMeeting}
+                className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-650 rounded-lg text-xs font-bold text-white transition cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Disconnect Call</span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
-        /* 3. Meetings List Grid Card view */
+        /* Standard Officer Meeting List View */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {meetings.map((meet) => (
-            <div key={meet.id} className="gov-card flex flex-col justify-between space-y-4 hover:border-gov-primary hover:border-opacity-35 transition-all">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-gov-muted font-mono">{meet.date}</span>
-                  <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold border ${getSensitivityBadge(meet.sensitivity || 'HIGH')}`}>
-                    {meet.sensitivity || 'HIGH'}
-                  </span>
+          {meetings.map((meet) => {
+            const isCopied = copiedMeetingId === meet.id;
+            return (
+              <div key={meet.id} className="gov-card flex flex-col justify-between space-y-4 hover:border-gov-primary hover:border-opacity-35 transition-all">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-gov-muted font-mono">{meet.date}</span>
+                    <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold border ${getSensitivityBadge(meet.sensitivity || 'HIGH')}`}>
+                      {meet.sensitivity || 'HIGH'}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-gov-text leading-snug">{meet.name}</h4>
+                  <div className="flex items-center gap-4 text-xs text-gov-muted pt-1">
+                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{meet.startTime} - {meet.endTime}</span>
+                    <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{meet.totalParticipants} Members</span>
+                  </div>
                 </div>
-                <h4 className="text-sm font-bold text-gov-text leading-snug">{meet.name}</h4>
-                <div className="flex items-center gap-4 text-xs text-gov-muted pt-1">
-                  <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />{meet.startTime} - {meet.endTime}</span>
-                  <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{meet.totalParticipants} Members</span>
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between border-t border-gov-border/30 pt-4 gap-2">
-                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
-                  meet.status === 'Completed' ? 'bg-gov-success/15 text-gov-success' : 'bg-gov-warning/15 text-gov-warning animate-pulse'
-                }`}>
-                  {meet.status === 'Completed' ? 'ARCHIVED' : 'LIVE BOARD'}
-                </span>
-                
-                <button
-                  onClick={() => startMeetingSecure(meet)}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-gov-primary text-white hover:bg-opacity-95 rounded font-semibold text-xs transition shadow-glow-primary cursor-pointer"
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Secure Join Call</span>
-                </button>
+                <div className="flex items-center justify-between border-t border-gov-border/30 pt-4 gap-2">
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                    meet.status === 'Completed' ? 'bg-gov-success/15 text-gov-success' : 'bg-gov-warning/15 text-gov-warning animate-pulse'
+                  }`}>
+                    {meet.status === 'Completed' ? 'ARCHIVED' : 'LIVE BOARD'}
+                  </span>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        copyShareableLink(meet.id);
+                      }}
+                      className="p-2 bg-gov-dark border border-gov-border text-gov-muted hover:text-gov-text rounded-lg transition cursor-pointer"
+                      title="Copy Shareable Link"
+                    >
+                      {isCopied ? <Check className="w-4 h-4 text-gov-success" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    
+                    <button
+                      onClick={() => startMeetingSecure(meet)}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gov-primary text-white hover:bg-opacity-95 rounded font-semibold text-xs transition shadow-glow-primary cursor-pointer"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Secure Join Call</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* 4. Schedule Meeting Modal */}
+      {/* Schedule Meeting Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <form onSubmit={handleScheduleSubmit} className="bg-gov-card border border-gov-border rounded-xl w-full max-w-lg overflow-hidden animate-slide-up shadow-glow-primary">
-            {/* Modal Header */}
             <div className="p-6 bg-gov-border/40 border-b border-gov-border flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-gov-primaryLight" />
@@ -801,7 +876,6 @@ export default function Meetings({ user }) {
               </button>
             </div>
 
-            {/* Modal Fields Form body */}
             <div className="p-6 space-y-4 text-xs">
               <div className="space-y-1">
                 <label className="text-gov-muted font-semibold uppercase">Meeting Title / Council Name</label>
@@ -876,7 +950,6 @@ export default function Meetings({ user }) {
               </div>
             </div>
 
-            {/* Modal Footer Actions */}
             <div className="p-6 bg-gov-dark/50 border-t border-gov-border flex justify-end gap-3">
               <button 
                 type="button" 

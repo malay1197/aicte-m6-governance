@@ -1381,6 +1381,67 @@ const db = {
         status: r.status
       }))
     };
+  },
+
+  async endMeeting(meetingId) {
+    const now = new Date();
+    if (useSupabase) {
+      try {
+        await supabase
+          .from('meetings')
+          .update({ status: 'Completed' })
+          .eq('id', meetingId);
+
+        const { data: activeSessions } = await supabase
+          .from('attendance_sessions')
+          .select('*')
+          .eq('meeting_id', meetingId)
+          .eq('status', 'Active');
+
+        if (activeSessions && activeSessions.length > 0) {
+          for (let s of activeSessions) {
+            const duration = Math.max(0, Math.floor((now - new Date(s.join_time)) / 1000));
+            await supabase
+              .from('attendance_sessions')
+              .update({
+                status: 'Completed',
+                leave_time: now.toISOString(),
+                duration_seconds: duration,
+                updated_at: now.toISOString()
+              })
+              .eq('id', s.id);
+          }
+        }
+        return { success: true };
+      } catch (err) {
+        console.error('Supabase endMeeting failed:', err);
+      }
+    }
+
+    if (useFallback) {
+      const data = readLocalFile();
+      const meeting = data.meetings.find(m => m.id === meetingId);
+      if (meeting) {
+        meeting.status = 'Completed';
+      }
+      data.attendanceSessions.forEach(s => {
+        if (s.meetingId === meetingId && s.status === 'Active') {
+          s.status = 'Completed';
+          s.leaveTime = now.toISOString();
+          s.durationSeconds = Math.max(0, Math.floor((new Date(s.leaveTime) - new Date(s.joinTime)) / 1000));
+        }
+      });
+      writeLocalFile(data);
+      return { success: true };
+    }
+
+    await pgPool.query("UPDATE meetings SET status = 'Completed' WHERE id = $1", [meetingId]);
+    await pgPool.query(`
+      UPDATE attendance_sessions 
+      SET status = 'Completed', leave_time = NOW(), duration_seconds = EXTRACT(EPOCH FROM (NOW() - join_time)), updated_at = NOW()
+      WHERE meeting_id = $1 AND status = 'Active'
+    `, [meetingId]);
+    return { success: true };
   }
 };
 

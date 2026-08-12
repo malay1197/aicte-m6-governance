@@ -39,6 +39,15 @@ export default function App() {
   const [securityEvents, setSecurityEvents] = useState(initialSecurityEvents);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlMeetingId = params.get('meetingId');
+    if (urlMeetingId) {
+      setSelectMeetingId(urlMeetingId);
+      setActiveTab('meetings');
+    }
+  }, []);
+
   // Sync theme class to root html tag
   useEffect(() => {
     const root = window.document.documentElement;

@@ -552,5 +552,30 @@ Return ONLY raw JSON. Do not write any markdown code blocks, backticks, or forma
       status: 'Offline',
       sessions: []
     };
+  },
+
+  async endMeeting(meetingId, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings/${meetingId}/end`, {
+        method: 'POST',
+        headers: { 'Authorization': authVal }
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn("Backend offline. Simulating endMeeting locally.");
+    }
+    
+    const localSess = JSON.parse(localStorage.getItem('local_attendance_sessions') || '[]');
+    const now = new Date();
+    localSess.forEach(s => {
+      if (s.meetingId === meetingId && s.status === 'Active') {
+        s.status = 'Completed';
+        s.leaveTime = now.toISOString();
+        s.durationSeconds = Math.max(0, Math.floor((new Date(s.leaveTime) - new Date(s.joinTime)) / 1000));
+      }
+    });
+    localStorage.setItem('local_attendance_sessions', JSON.stringify(localSess));
+    return { success: true };
   }
 };

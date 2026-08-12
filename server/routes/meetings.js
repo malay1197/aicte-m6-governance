@@ -103,4 +103,15 @@ router.get('/:meetingId/attendance/:userId', authMiddleware, async (req, res) =>
   }
 });
 
+// 7. POST /api/meetings/:meetingId/end
+router.post('/:meetingId/end', authMiddleware, async (req, res) => {
+  const { meetingId } = req.params;
+  try {
+    await db.endMeeting(meetingId);
+    res.json({ success: true, message: 'Meeting and all active participant attendance sessions terminated successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to end meeting', message: err.message });
+  }
+});
+
 module.exports = router;
