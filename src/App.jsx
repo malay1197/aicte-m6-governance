@@ -14,7 +14,6 @@ import Reports from './pages/Reports';
 import Memory from './pages/Memory';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
-import DemoController from './components/DemoController';
 import { api } from './utils/api';
 
 import { 
@@ -41,9 +40,6 @@ export default function App() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [securityEvents, setSecurityEvents] = useState(initialSecurityEvents);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // Demo controller current walkthrough index
-  const [currentStep, setCurrentStep] = useState(0);
 
   // Sync theme class to root html tag
   useEffect(() => {
@@ -155,7 +151,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex bg-gov-dark min-h-screen text-gov-text relative pb-28 transition-colors duration-300">
+    <div className="flex bg-gov-dark min-h-screen text-gov-text relative pb-8 transition-colors duration-300">
       
       {/* 1. Sidebar Nav Panel */}
       <Sidebar 
@@ -177,8 +173,6 @@ export default function App() {
           onLogout={handleLogout}
           onOpenSecurityPanel={() => {
             setActiveTab('dashboard');
-            // Programmatically guide them to step 6 (Threat remediation modal)
-            setCurrentStep(5); 
           }}
           onMobileMenuToggle={() => setIsMobileMenuOpen(true)}
         />
@@ -188,16 +182,6 @@ export default function App() {
           {renderActivePage()}
         </main>
       </div>
-
-      {/* 3. Interactive Walkthrough Deck */}
-      <DemoController 
-        currentStep={currentStep} 
-        setCurrentStep={setCurrentStep}
-        setActiveTab={setActiveTab}
-        setSelectMeetingId={setSelectMeetingId}
-        setNotifications={setNotifications}
-        setSecurityEvents={setSecurityEvents}
-      />
     </div>
   );
 }
