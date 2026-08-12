@@ -62,8 +62,8 @@ export default function AIMeeting() {
       default:
         return {
           bg: 'bg-gov-warning bg-opacity-15 border-gov-warning border-opacity-35 text-gov-warning',
-          title: 'AI-Generated Draft (Review Required)',
-          desc: 'Automated minutes compiled by AI model. Requires compliance officer review and sign-off.',
+          title: 'Draft Minutes (Review Required)',
+          desc: 'Draft minutes captured by transcription node. Requires compliance officer review and sign-off.',
           icon: AlertTriangle
         };
     }
@@ -78,9 +78,9 @@ export default function AIMeeting() {
       {/* 1. Header selection bar */}
       <div className="gov-card flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h3 className="text-md font-bold text-gov-text">AI Meeting Intelligence Engine</h3>
+          <h3 className="text-md font-bold text-gov-text">Meeting Minutes & Transcripts Compiler</h3>
           <p className="text-xs text-gov-muted">
-            Transcribe, compile decisions, and track action items automatically using LLM models.
+            Compile meeting dialogue, record decisions, and log official action items.
           </p>
         </div>
         

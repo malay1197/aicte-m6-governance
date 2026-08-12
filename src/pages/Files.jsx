@@ -14,7 +14,8 @@ import {
   Clock,
   Layers,
   ChevronDown,
-  UserCheck
+  UserCheck,
+  X
 } from 'lucide-react';
 
 export default function Files() {

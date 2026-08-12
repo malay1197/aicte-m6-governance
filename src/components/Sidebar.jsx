@@ -20,7 +20,7 @@ export default function Sidebar({ activeTab, setActiveTab, unreadCount, critical
     { id: 'meetings', label: 'Meetings Portal', icon: Video },
     { id: 'recordings', label: 'Meeting Recordings', icon: Film },
     { id: 'files', label: 'Secure Files', icon: FolderOpen },
-    { id: 'aimeeting', label: 'AI Intelligence', icon: Cpu },
+    { id: 'aimeeting', label: 'Meeting Minutes', icon: Cpu },
     { id: 'blockchain', label: 'Ledger Verification', icon: LinkIcon },
     { id: 'attendance', label: 'Attendance Logs', icon: UserCheck },
     { id: 'audit', label: 'Audit Logs', icon: FileSpreadsheet, badge: criticalCount, badgeColor: 'bg-gov-danger' },

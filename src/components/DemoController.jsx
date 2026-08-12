@@ -133,7 +133,7 @@ export default function DemoController({
         </div>
         <div className="space-y-0.5">
           <span className="text-[10px] text-gov-primaryLight uppercase font-extrabold tracking-wider">
-            SIH Demo Flow Walkthrough
+            Governance Platform Guided Tour
           </span>
           <h4 className="text-xs font-bold text-gov-text">{steps[currentStep].title}</h4>
           <p className="text-[10px] text-gov-muted leading-relaxed">

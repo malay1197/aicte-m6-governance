@@ -29,7 +29,7 @@ export default function Header({
     meetings: 'Secure Video Conferencing & Jitsi',
     recordings: 'Compliance Council Video Archives',
     files: 'Encrypted S3 Document Storage',
-    aimeeting: 'AI Meeting Intelligence',
+    aimeeting: 'Meeting Transcripts & Minutes',
     blockchain: 'Blockchain Integrity Ledger',
     attendance: 'Meeting Attendance Tracker',
     audit: 'System Activity logs',
