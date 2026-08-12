@@ -28,8 +28,30 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
   // Real-time ticking state to force 1-second dynamic UI duration updates
   const [tick, setTick] = useState(0);
 
+  // Dynamic meetings database cache
+  const [meetings, setMeetings] = useState([]);
+
+  // Load meetings list on component mount
+  useEffect(() => {
+    fetchMeetingsList();
+  }, []);
+
+  const fetchMeetingsList = async () => {
+    try {
+      const list = await api.getAttendance();
+      setMeetings(list);
+      // Auto select the first meeting if none is selected
+      if (list.length > 0 && !selectMeetingId) {
+        setSelectMeetingId(list[0].id);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch meetings in Attendance panel. Fallback to mock.");
+      setMeetings(mockMeetings);
+    }
+  };
+
   // Selected meeting logic
-  const selectedMeeting = mockMeetings.find(m => m.id === selectMeetingId) || mockMeetings[0];
+  const selectedMeeting = meetings.find(m => m.id === selectMeetingId) || meetings[0] || mockMeetings[0];
 
   // Fetch attendance from server/local fallback
   useEffect(() => {
@@ -148,7 +170,7 @@ export default function Attendance({ selectMeetingId, setSelectMeetingId, setAct
       <div>
         <h3 className="text-xs font-semibold text-gov-muted uppercase tracking-wider mb-4">Select Governance Meeting</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockMeetings.map((meet) => {
+          {meetings.map((meet) => {
             const isSelected = meet.id === selectedMeeting.id;
             return (
               <button
