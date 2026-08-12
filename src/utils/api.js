@@ -274,5 +274,283 @@ Return ONLY raw JSON. Do not write any markdown code blocks, backticks, or forma
     const data = await response.json();
     const resultText = data.candidates[0].content.parts[0].text;
     return JSON.parse(resultText.trim());
+  },
+
+  // --- Secure Jitsi Meetings & Attendance Systems ---
+  async joinMeeting(meetingId, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings/${meetingId}/join`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': authVal,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn("Backend offline. Running client-side Jitsi Gatekeeper simulation.");
+    }
+
+    // Direct local fallback check
+    if (meetingId === 'meet-001' && credentials.role === 'Student') {
+      throw new Error("Access Denied: Jitsi Security Gatekeeper rejected join request. Check authorization.");
+    }
+    return {
+      success: true,
+      roomName: `AICTE-Sec-Governance-Room-${meetingId}`,
+      displayName: `${credentials.username} (${credentials.role})`
+    };
+  },
+
+  async startAttendance(meetingId, body, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings/${meetingId}/attendance/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authVal
+        },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn("Backend offline. Starting client-side attendance session fallback.");
+    }
+
+    // Fallback logic using localStorage
+    const now = new Date();
+    const sessionId = `sess-${Date.now()}`;
+    const sessions = JSON.parse(localStorage.getItem('local_attendance_sessions') || '[]');
+    
+    // Check if there is already an active session
+    const active = sessions.find(s => 
+      s.meetingId === meetingId && 
+      s.userId === body.userId && 
+      s.status === 'Active' &&
+      (now - new Date(s.lastHeartbeat)) < 45000
+    );
+
+    if (active) {
+      active.lastHeartbeat = now.toISOString();
+      localStorage.setItem('local_attendance_sessions', JSON.stringify(sessions));
+      return { sessionId: active.sessionId };
+    }
+
+    // Close other active sessions
+    sessions.forEach(s => {
+      if (s.meetingId === meetingId && s.userId === body.userId && s.status === 'Active') {
+        s.status = 'Completed';
+        s.leaveTime = s.lastHeartbeat;
+        s.durationSeconds = Math.max(0, Math.floor((new Date(s.leaveTime) - new Date(s.joinTime)) / 1000));
+      }
+    });
+
+    const newSess = {
+      meetingId,
+      userId: body.userId,
+      name: body.name,
+      role: credentials.role,
+      sessionId,
+      joinTime: now.toISOString(),
+      leaveTime: null,
+      durationSeconds: 0,
+      status: 'Active',
+      lastHeartbeat: now.toISOString()
+    };
+    sessions.push(newSess);
+    localStorage.setItem('local_attendance_sessions', JSON.stringify(sessions));
+    return { sessionId };
+  },
+
+  async heartbeatAttendance(meetingId, body, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      await fetch(`${BASE_URL}/meetings/${meetingId}/attendance/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authVal
+        },
+        body: JSON.stringify(body)
+      });
+      return;
+    } catch (e) {
+      // ignore
+    }
+
+    const now = new Date();
+    const sessions = JSON.parse(localStorage.getItem('local_attendance_sessions') || '[]');
+    const sess = sessions.find(s => s.sessionId === body.sessionId);
+    if (sess) {
+      sess.lastHeartbeat = now.toISOString();
+      sess.leaveTime = now.toISOString();
+      sess.durationSeconds = Math.max(0, Math.floor((new Date(sess.leaveTime) - new Date(sess.joinTime)) / 1000));
+      localStorage.setItem('local_attendance_sessions', JSON.stringify(sessions));
+    }
+  },
+
+  async endAttendance(meetingId, body, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      await fetch(`${BASE_URL}/meetings/${meetingId}/attendance/end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authVal
+        },
+        body: JSON.stringify(body)
+      });
+      return;
+    } catch (e) {
+      // ignore
+    }
+
+    const now = new Date();
+    const sessions = JSON.parse(localStorage.getItem('local_attendance_sessions') || '[]');
+    const sess = sessions.find(s => s.sessionId === body.sessionId);
+    if (sess) {
+      sess.status = 'Completed';
+      sess.leaveTime = now.toISOString();
+      sess.durationSeconds = Math.max(0, Math.floor((new Date(sess.leaveTime) - new Date(sess.joinTime)) / 1000));
+      localStorage.setItem('local_attendance_sessions', JSON.stringify(sessions));
+    }
+  },
+
+  async getMeetingAttendance(meetingId, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings/${meetingId}/attendance`, {
+        headers: { 'Authorization': authVal }
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn("Backend offline. Generating mock/local attendance details.");
+    }
+
+    // Default mock data seeds
+    const defaultData = [];
+    if (meetingId === 'meet-001') {
+      defaultData.push(
+        {
+          userId: 'p-001',
+          name: 'Dr. Anil Sahasrabudhe',
+          role: 'Chairman',
+          sessionsCount: 1,
+          totalDurationSeconds: 5700,
+          status: 'Offline',
+          sessions: [{ joinTime: '2026-08-05T10:00:00.000Z', leaveTime: '2026-08-05T11:35:00.000Z', durationSeconds: 5700, status: 'Completed' }]
+        },
+        {
+          userId: 'p-002',
+          name: 'Prof. Rajive Kumar',
+          role: 'Member Secretary',
+          sessionsCount: 1,
+          totalDurationSeconds: 5520,
+          status: 'Offline',
+          sessions: [{ joinTime: '2026-08-05T10:02:00.000Z', leaveTime: '2026-08-05T11:34:00.000Z', durationSeconds: 5520, status: 'Completed' }]
+        },
+        {
+          userId: 'student_rahul',
+          name: 'Rahul Patel',
+          role: 'Student',
+          sessionsCount: 3,
+          totalDurationSeconds: 2700,
+          status: 'Offline',
+          sessions: [
+            { joinTime: '2026-08-05T10:00:00.000Z', leaveTime: '2026-08-05T10:20:00.000Z', durationSeconds: 1200, status: 'Completed' },
+            { joinTime: '2026-08-05T10:30:00.000Z', leaveTime: '2026-08-05T10:45:00.000Z', durationSeconds: 900, status: 'Completed' },
+            { joinTime: '2026-08-05T11:00:00.000Z', leaveTime: '2026-08-05T11:10:00.000Z', durationSeconds: 600, status: 'Completed' }
+          ]
+        }
+      );
+    } else {
+      defaultData.push(
+        {
+          userId: 'student_rahul',
+          name: 'Rahul Patel',
+          role: 'Student',
+          sessionsCount: 2,
+          totalDurationSeconds: 3120,
+          status: 'Offline',
+          sessions: [
+            { joinTime: '2026-08-06T14:00:00.000Z', leaveTime: '2026-08-06T14:40:00.000Z', durationSeconds: 2400, status: 'Completed' },
+            { joinTime: '2026-08-06T15:00:00.000Z', leaveTime: '2026-08-06T15:12:00.000Z', durationSeconds: 720, status: 'Completed' }
+          ]
+        },
+        {
+          userId: 'admin_aicte',
+          name: 'Dr. Abhay Jere',
+          role: 'Admin',
+          sessionsCount: 1,
+          totalDurationSeconds: 9300,
+          status: 'Offline',
+          sessions: [{ joinTime: '2026-08-06T13:55:00.000Z', leaveTime: '2026-08-06T16:30:00.000Z', durationSeconds: 9300, status: 'Completed' }]
+        }
+      );
+    }
+
+    const localSess = JSON.parse(localStorage.getItem('local_attendance_sessions') || '[]');
+    const currentMeetingSessions = localSess.filter(s => s.meetingId === meetingId);
+    
+    currentMeetingSessions.forEach(ls => {
+      let group = defaultData.find(d => d.userId === ls.userId);
+      if (!group) {
+        group = {
+          userId: ls.userId,
+          name: ls.name,
+          role: ls.role,
+          sessionsCount: 0,
+          totalDurationSeconds: 0,
+          status: 'Offline',
+          sessions: []
+        };
+        defaultData.push(group);
+      }
+      
+      if (!group.sessions.some(s => s.joinTime === ls.joinTime)) {
+        group.sessionsCount++;
+        group.totalDurationSeconds += ls.durationSeconds;
+        group.sessions.unshift({
+          joinTime: ls.joinTime,
+          leaveTime: ls.leaveTime,
+          durationSeconds: ls.durationSeconds,
+          status: ls.status
+        });
+        if (ls.status === 'Active') {
+          group.status = 'Online';
+        }
+      }
+    });
+
+    return defaultData;
+  },
+
+  async getUserMeetingAttendance(meetingId, userId, credentials) {
+    try {
+      const authVal = `Bearer ${credentials.username}:${credentials.role}`;
+      const res = await fetch(`${BASE_URL}/meetings/${meetingId}/attendance/${userId}`, {
+        headers: { 'Authorization': authVal }
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // ignore
+    }
+
+    const list = await this.getMeetingAttendance(meetingId, credentials);
+    const userSess = list.find(l => l.userId === userId);
+    if (userSess) return userSess;
+
+    return {
+      userId,
+      name: credentials.username === 'student_rahul' ? 'Rahul Patel' : 'Dr. Abhay Jere',
+      email: credentials.username === 'student_rahul' ? 'rahul.patel@sih.gov.in' : 'abhay.jere@aicte-india.org',
+      role: credentials.role,
+      totalDurationSeconds: 0,
+      sessionsCount: 0,
+      status: 'Offline',
+      sessions: []
+    };
   }
 };

@@ -26,7 +26,10 @@ const ddlQueries = [
       title VARCHAR(200) NOT NULL,
       scheduled_start TIMESTAMP WITH TIME ZONE NOT NULL,
       scheduled_end TIMESTAMP WITH TIME ZONE NOT NULL,
-      status VARCHAR(20) DEFAULT 'Scheduled'
+      status VARCHAR(20) DEFAULT 'Scheduled',
+      description TEXT,
+      room_name VARCHAR(100),
+      created_by VARCHAR(50)
   );`,
 
   // 4. Create attendance table
@@ -86,7 +89,40 @@ const ddlQueries = [
   );`,
 
   // 9. Add GIN index for search_vector
-  `CREATE INDEX IF NOT EXISTS idx_memory_search_vector ON institutional_memory USING gin(search_vector);`
+  `CREATE INDEX IF NOT EXISTS idx_memory_search_vector ON institutional_memory USING gin(search_vector);`,
+
+  // 10. Create users table
+  `CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(50) PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(100) UNIQUE NOT NULL,
+      role VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );`,
+
+  // 11. Create meeting_participants table
+  `CREATE TABLE IF NOT EXISTS meeting_participants (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE,
+      user_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
+      allowed BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );`,
+
+  // 12. Create attendance_sessions table
+  `CREATE TABLE IF NOT EXISTS attendance_sessions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      meeting_id UUID REFERENCES meetings(id) ON DELETE CASCADE,
+      user_id VARCHAR(50) REFERENCES users(id) ON DELETE CASCADE,
+      session_id VARCHAR(50) UNIQUE NOT NULL,
+      join_time TIMESTAMP WITH TIME ZONE NOT NULL,
+      leave_time TIMESTAMP WITH TIME ZONE,
+      duration_seconds INTEGER DEFAULT 0,
+      status VARCHAR(25) CHECK (status IN ('Active', 'Completed')) DEFAULT 'Active',
+      last_heartbeat TIMESTAMP WITH TIME ZONE,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );`
 ];
 
 const triggerQueries = [
@@ -207,6 +243,23 @@ async function setup() {
         INSERT INTO institutional_memory (title, category, record_date, summary, decision_details, action_items, documents_list, authorized_roles, blockchain_hash, ai_transcript_segment) VALUES
         ('AICTE Review Meeting - Budget Allocations Q3 2026', 'Meetings', '2026-08-05', 'AICTE quarterly budget allocation approval. Allocated INR 12.5 Crores.', 'Approved funding increase of 15% for innovation cell labs.', 'Dr. Abhay Jere to finalize dispersal metrics.', ARRAY['AICTE_Budget_2026_Q3.pdf'], ARRAY['Admin', 'Chairman', 'CIO', 'Advisor'], '0x892e8bf723da890bf2a3e9c8821a9980d28711e9a2bc91e772153c3d2890fb91', 'Decided in 12 mins. Primary advocates: Prof M.P. Poonia.'),
         ('SIH Incubation Grant Dispersal Scheme', 'Decisions', '2026-08-05', 'Approval of the criteria for selecting hackathon project prototypes.', 'SIH final prototypes with gold rating will receive 2 Lakhs seed grant.', 'All coordinators to distribute guidelines.', ARRAY['Incubation_Select_Guidelines_v2.pdf'], ARRAY['Admin', 'Chairman', 'CIO', 'Evaluator'], '0xf3a890b7218d22e8bf287c8811e92bc9153c99e9c88e77c3d215bda90ab228fc', 'Consensus reached rapidly.')
+      `);
+
+      // Seed Users
+      await pool.query(`
+        INSERT INTO users (id, name, email, role) VALUES
+        ('admin_aicte', 'Dr. Abhay Jere', 'abhay.jere@aicte-india.org', 'Admin'),
+        ('student_rahul', 'Rahul Patel', 'rahul.patel@sih.gov.in', 'Student'),
+        ('prof_rajive', 'Prof. Rajive Kumar', 'rajive.kumar@aicte-india.org', 'Member Secretary')
+      `);
+
+      // Seed allowed meeting participants
+      await pool.query(`
+        INSERT INTO meeting_participants (meeting_id, user_id, allowed) VALUES
+        ('${m1Id}', 'admin_aicte', TRUE),
+        ('${m1Id}', 'prof_rajive', TRUE),
+        ('${m2Id}', 'admin_aicte', TRUE),
+        ('${m2Id}', 'student_rahul', TRUE)
       `);
 
       console.log('Database seeded with SIH data successfully.');

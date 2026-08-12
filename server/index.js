@@ -15,6 +15,8 @@ const attendanceRouter = require('./routes/attendance');
 const reportsRouter = require('./routes/reports');
 const memoryRouter = require('./routes/memory');
 const webhooksRouter = require('./routes/webhooks');
+const aiRouter = require('./routes/ai');
+const meetingsRouter = require('./routes/meetings');
 
 // Mount Webhooks first (no auth checks to simulate external system inputs)
 app.use('/api/webhooks', webhooksRouter);
@@ -24,6 +26,8 @@ app.use('/api/audit-logs', auditRouter);
 app.use('/api/attendance', attendanceRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/memory', memoryRouter);
+app.use('/api/ai', aiRouter);
+app.use('/api/meetings', meetingsRouter);
 
 // --- Direct Alerts & Notifications Routes (With Auth Middleware) ---
 
@@ -92,4 +96,13 @@ db.init().then(() => {
   app.listen(PORT, () => {
     console.log(`M6 secure governance service is running on port ${PORT}`);
   });
+
+  // Clean up orphaned active attendance sessions (e.g., if a user crashed/disconnected)
+  setInterval(async () => {
+    try {
+      await db.sweepOrphanedSessions();
+    } catch (err) {
+      console.error('Failed to sweep active sessions:', err);
+    }
+  }, 30000);
 });

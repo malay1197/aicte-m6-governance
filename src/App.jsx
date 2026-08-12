@@ -88,7 +88,7 @@ export default function App() {
           />
         );
       case 'meetings':
-        return <Meetings />;
+        return <Meetings user={user} />;
       case 'recordings':
         return <VideoArchive />;
       case 'files':
@@ -103,6 +103,7 @@ export default function App() {
             selectMeetingId={selectMeetingId}
             setSelectMeetingId={setSelectMeetingId}
             setActiveTab={setActiveTab}
+            user={user}
           />
         );
       case 'audit':

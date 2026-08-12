@@ -17,7 +17,8 @@ export default function Login({ onLoginSuccess }) {
 
     // Simulate validation
     setTimeout(() => {
-      if (username.trim() === 'admin_aicte' && password === 'password123') {
+      const u = username.trim();
+      if ((u === 'admin_aicte' || u === 'student_rahul') && password === 'password123') {
         setStep(2);
         setIsLoading(false);
       } else {
@@ -61,11 +62,24 @@ export default function Login({ onLoginSuccess }) {
     setTimeout(() => {
       if (code === '123456' || code === '654321' || code.startsWith('123') || code.endsWith('6')) {
         setIsLoading(false);
-        onLoginSuccess({
-          username: 'admin_aicte',
-          role: 'System Compliance Officer',
-          authenticatedAt: new Date().toISOString()
-        });
+        const u = username.trim();
+        if (u === 'student_rahul') {
+          onLoginSuccess({
+            username: 'student_rahul',
+            role: 'Student',
+            name: 'Rahul Patel',
+            email: 'rahul.patel@sih.gov.in',
+            authenticatedAt: new Date().toISOString()
+          });
+        } else {
+          onLoginSuccess({
+            username: 'admin_aicte',
+            role: 'System Compliance Officer',
+            name: 'Dr. Abhay Jere',
+            email: 'abhay.jere@aicte-india.org',
+            authenticatedAt: new Date().toISOString()
+          });
+        }
       } else {
         setError('Invalid secure token signature. Please verify the code on your MFA device.');
         setIsLoading(false);
@@ -155,9 +169,8 @@ export default function Login({ onLoginSuccess }) {
               )}
               <span>AUTHENTICATE CREDENTIALS</span>
             </button>
-            
             <p className="text-[10px] text-gov-muted text-center leading-relaxed">
-              Default credentials: <span className="font-semibold text-gov-primaryLight">admin_aicte</span> & <span className="font-semibold text-gov-primaryLight">password123</span>
+              Default credentials: <span className="font-semibold text-gov-primaryLight">admin_aicte</span> (Officer) or <span className="font-semibold text-gov-primaryLight">student_rahul</span> (Student) & <span className="font-semibold text-gov-primaryLight">password123</span>
             </p>
           </form>
         ) : (

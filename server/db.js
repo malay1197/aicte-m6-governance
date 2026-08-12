@@ -105,7 +105,19 @@ const baselineSeed = {
       }
     }
   ],
-  reports: []
+  reports: [],
+  users: [
+    { id: "admin_aicte", name: "Dr. Abhay Jere", email: "abhay.jere@aicte-india.org", role: "Admin" },
+    { id: "student_rahul", name: "Rahul Patel", email: "rahul.patel@sih.gov.in", role: "Student" },
+    { id: "prof_rajive", name: "Prof. Rajive Kumar", email: "rajive.kumar@aicte-india.org", role: "Member Secretary" }
+  ],
+  meetingParticipants: [
+    { meetingId: "meet-001", userId: "admin_aicte", allowed: true },
+    { meetingId: "meet-001", userId: "prof_rajive", allowed: true },
+    { meetingId: "meet-002", userId: "admin_aicte", allowed: true },
+    { meetingId: "meet-002", userId: "student_rahul", allowed: true }
+  ],
+  attendanceSessions: []
 };
 
 // Initialize connection
@@ -425,21 +437,348 @@ const db = {
     const { rows } = await pgPool.query(sql, params);
     
     return rows.map(r => ({
-      id: r.id,
-      title: r.title,
-      category: r.category,
-      date: r.record_date.toISOString().split('T')[0],
-      relevance: Math.round((r.rank || 0.1) * 100),
-      details: {
-        summary: r.summary,
-        decision: r.decision_details,
-        actionItems: r.action_items,
         blockchainHash: r.blockchain_hash,
         authorizedRoles: r.authorized_roles,
         documents: r.documents_list,
         aiHighlights: r.ai_transcript_segment
       }
     }));
+  },
+
+  async getUser(id) {
+    if (useFallback) {
+      const data = readLocalFile();
+      return data.users.find(u => u.id === id) || null;
+    }
+    const { rows } = await pgPool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return rows[0] || null;
+  },
+
+  async isUserAllowedInMeeting(meetingId, userId) {
+    const user = await this.getUser(userId);
+    if (user && user.role === 'Admin') return true;
+
+    if (useFallback) {
+      const data = readLocalFile();
+      const isAllowed = data.meetingParticipants.some(mp => mp.meetingId === meetingId && mp.userId === userId && mp.allowed);
+      if (isAllowed) return true;
+      const meeting = data.meetings.find(m => m.id === meetingId);
+      if (meeting && meeting.id.startsWith('meet-') && meeting.id !== 'meet-001') return true;
+      return false;
+    }
+
+    const { rows } = await pgPool.query('SELECT * FROM meeting_participants WHERE meeting_id = $1 AND user_id = $2 AND allowed = TRUE', [meetingId, userId]);
+    if (rows.length > 0) return true;
+
+    const { rows: meetings } = await pgPool.query('SELECT * FROM meetings WHERE id = $1', [meetingId]);
+    if (meetings.length > 0 && meetings[0].id !== 'meet-001') {
+      return true;
+    }
+    return false;
+  },
+
+  async startAttendanceSession(meetingId, userId, name, email, jitsiRoomName) {
+    const now = new Date();
+    const sessionId = `sess-${Date.now()}`;
+
+    if (useFallback) {
+      const data = readLocalFile();
+      let user = data.users.find(u => u.id === userId);
+      if (!user) {
+        user = { id: userId, name, email, role: 'Student' };
+        data.users.push(user);
+      }
+
+      const activeSession = data.attendanceSessions.find(s => 
+        s.meetingId === meetingId && 
+        s.userId === userId && 
+        s.status === 'Active' &&
+        (now - new Date(s.lastHeartbeat)) < 45000
+      );
+
+      if (activeSession) {
+        activeSession.lastHeartbeat = now.toISOString();
+        writeLocalFile(data);
+        return activeSession;
+      }
+
+      data.attendanceSessions.forEach(s => {
+        if (s.meetingId === meetingId && s.userId === userId && s.status === 'Active') {
+          s.status = 'Completed';
+          s.leaveTime = s.lastHeartbeat;
+          s.durationSeconds = Math.max(0, Math.floor((new Date(s.leaveTime) - new Date(s.joinTime)) / 1000));
+        }
+      });
+
+      const newSession = {
+        id: `sess-uuid-${Date.now()}`,
+        meetingId,
+        userId,
+        sessionId,
+        joinTime: now.toISOString(),
+        leaveTime: null,
+        durationSeconds: 0,
+        status: 'Active',
+        lastHeartbeat: now.toISOString(),
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString()
+      };
+      data.attendanceSessions.push(newSession);
+      writeLocalFile(data);
+      return newSession;
+    }
+
+    await pgPool.query(`
+      INSERT INTO users (id, name, email, role) 
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (id) DO NOTHING
+    `, [userId, name, email, 'Student']);
+
+    const activeCheck = await pgPool.query(`
+      SELECT * FROM attendance_sessions 
+      WHERE meeting_id = $1 AND user_id = $2 AND status = 'Active' AND last_heartbeat > NOW() - INTERVAL '45 seconds'
+    `, [meetingId, userId]);
+
+    if (activeCheck.rows.length > 0) {
+      const activeSession = activeCheck.rows[0];
+      await pgPool.query(`
+        UPDATE attendance_sessions SET last_heartbeat = NOW(), updated_at = NOW() WHERE id = $1
+      `, [activeSession.id]);
+      return { sessionId: activeSession.session_id };
+    }
+
+    await pgPool.query(`
+      UPDATE attendance_sessions 
+      SET status = 'Completed', leave_time = last_heartbeat, duration_seconds = EXTRACT(EPOCH FROM (last_heartbeat - join_time))
+      WHERE meeting_id = $1 AND user_id = $2 AND status = 'Active'
+    `, [meetingId, userId]);
+
+    const q = `
+      INSERT INTO attendance_sessions (meeting_id, user_id, session_id, join_time, status, last_heartbeat)
+      VALUES ($1, $2, $3, NOW(), 'Active', NOW()) RETURNING *
+    `;
+    const { rows } = await pgPool.query(q, [meetingId, userId, sessionId]);
+    return { sessionId: rows[0].session_id };
+  },
+
+  async heartbeatAttendanceSession(sessionId) {
+    const now = new Date();
+    if (useFallback) {
+      const data = readLocalFile();
+      const session = data.attendanceSessions.find(s => s.sessionId === sessionId);
+      if (session) {
+        session.lastHeartbeat = now.toISOString();
+        session.leaveTime = now.toISOString();
+        session.durationSeconds = Math.max(0, Math.floor((new Date(session.leaveTime) - new Date(session.joinTime)) / 1000));
+        session.updatedAt = now.toISOString();
+        writeLocalFile(data);
+        return session;
+      }
+      return null;
+    }
+    const q = `
+      UPDATE attendance_sessions 
+      SET last_heartbeat = NOW(), leave_time = NOW(), duration_seconds = EXTRACT(EPOCH FROM (NOW() - join_time)), updated_at = NOW() 
+      WHERE session_id = $1 RETURNING *
+    `;
+    const { rows } = await pgPool.query(q, [sessionId]);
+    return rows[0] || null;
+  },
+
+  async endAttendanceSession(sessionId) {
+    const now = new Date();
+    if (useFallback) {
+      const data = readLocalFile();
+      const session = data.attendanceSessions.find(s => s.sessionId === sessionId);
+      if (session) {
+        session.status = 'Completed';
+        session.leaveTime = now.toISOString();
+        session.durationSeconds = Math.max(0, Math.floor((new Date(session.leaveTime) - new Date(session.joinTime)) / 1000));
+        session.updatedAt = now.toISOString();
+        writeLocalFile(data);
+        return session;
+      }
+      return null;
+    }
+    const q = `
+      UPDATE attendance_sessions 
+      SET status = 'Completed', leave_time = NOW(), duration_seconds = EXTRACT(EPOCH FROM (NOW() - join_time)), updated_at = NOW() 
+      WHERE session_id = $1 RETURNING *
+    `;
+    const { rows } = await pgPool.query(q, [sessionId]);
+    return rows[0] || null;
+  },
+
+  async sweepOrphanedSessions() {
+    if (useFallback) {
+      const data = readLocalFile();
+      const now = new Date();
+      let updated = false;
+      data.attendanceSessions.forEach(s => {
+        if (s.status === 'Active' && (now - new Date(s.lastHeartbeat)) > 35000) {
+          s.status = 'Completed';
+          s.leaveTime = s.lastHeartbeat;
+          s.durationSeconds = Math.max(0, Math.floor((new Date(s.leaveTime) - new Date(s.joinTime)) / 1000));
+          s.updatedAt = now.toISOString();
+          updated = true;
+          console.log(`Swept orphaned fallback session ${s.sessionId} for user ${s.userId}`);
+        }
+      });
+      if (updated) {
+        writeLocalFile(data);
+      }
+      return;
+    }
+    const q = `
+      UPDATE attendance_sessions 
+      SET status = 'Completed', leave_time = last_heartbeat, duration_seconds = EXTRACT(EPOCH FROM (last_heartbeat - join_time)), updated_at = NOW()
+      WHERE status = 'Active' AND last_heartbeat < NOW() - INTERVAL '35 seconds'
+    `;
+    const res = await pgPool.query(q);
+    if (res.rowCount > 0) {
+      console.log(`Swept ${res.rowCount} orphaned active sessions in Postgres`);
+    }
+  },
+
+  async getMeetingAttendanceDetails(meetingId) {
+    if (useFallback) {
+      const data = readLocalFile();
+      const sessions = data.attendanceSessions.filter(s => s.meetingId === meetingId);
+      const userGroup = {};
+      
+      sessions.forEach(s => {
+        if (!userGroup[s.userId]) {
+          const user = data.users.find(u => u.id === s.userId) || { id: s.userId, name: s.userId, role: 'Student' };
+          userGroup[s.userId] = {
+            userId: s.userId,
+            name: user.name,
+            role: user.role,
+            sessionsCount: 0,
+            totalDurationSeconds: 0,
+            status: 'Offline',
+            sessions: []
+          };
+        }
+        
+        userGroup[s.userId].sessionsCount++;
+        userGroup[s.userId].totalDurationSeconds += s.durationSeconds;
+        userGroup[s.userId].sessions.push({
+          joinTime: s.joinTime,
+          leaveTime: s.leaveTime,
+          durationSeconds: s.durationSeconds,
+          status: s.status
+        });
+        
+        if (s.status === 'Active') {
+          userGroup[s.userId].status = 'Online';
+        }
+      });
+      
+      return Object.values(userGroup);
+    }
+
+    const q = `
+      SELECT s.*, u.name as user_name, u.role as user_role 
+      FROM attendance_sessions s 
+      JOIN users u ON s.user_id = u.id 
+      WHERE s.meeting_id = $1
+    `;
+    const { rows } = await pgPool.query(q, [meetingId]);
+    const userGroup = {};
+    rows.forEach(r => {
+      if (!userGroup[r.user_id]) {
+        userGroup[r.user_id] = {
+          userId: r.user_id,
+          name: r.user_name,
+          role: r.user_role,
+          sessionsCount: 0,
+          totalDurationSeconds: 0,
+          status: 'Offline',
+          sessions: []
+        };
+      }
+      userGroup[r.user_id].sessionsCount++;
+      userGroup[r.user_id].totalDurationSeconds += r.duration_seconds;
+      userGroup[r.user_id].sessions.push({
+        joinTime: r.join_time,
+        leaveTime: r.leave_time,
+        duration_seconds: r.duration_seconds,
+        status: r.status
+      });
+      if (r.status === 'Active') {
+        userGroup[r.user_id].status = 'Online';
+      }
+    });
+    return Object.values(userGroup);
+  },
+
+  async getUserMeetingAttendanceDetails(meetingId, userId) {
+    if (useFallback) {
+      const data = readLocalFile();
+      const sessions = data.attendanceSessions.filter(s => s.meetingId === meetingId && s.userId === userId);
+      const user = data.users.find(u => u.id === userId) || { id: userId, name: userId, role: 'Student' };
+      
+      const totalSec = sessions.reduce((acc, s) => acc + s.durationSeconds, 0);
+      const activeSession = sessions.find(s => s.status === 'Active');
+
+      return {
+        userId,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        totalDurationSeconds: totalSec,
+        sessionsCount: sessions.length,
+        status: activeSession ? 'Online' : 'Offline',
+        sessions: sessions.map(s => ({
+          sessionId: s.sessionId,
+          joinTime: s.joinTime,
+          leaveTime: s.leaveTime,
+          durationSeconds: s.durationSeconds,
+          status: s.status
+        }))
+      };
+    }
+
+    const { rows } = await pgPool.query(`
+      SELECT s.*, u.name as user_name, u.email as user_email, u.role as user_role 
+      FROM attendance_sessions s 
+      JOIN users u ON s.user_id = u.id 
+      WHERE s.meeting_id = $1 AND s.user_id = $2
+    `, [meetingId, userId]);
+
+    if (rows.length === 0) {
+      const user = await this.getUser(userId);
+      return {
+        userId,
+        name: user ? user.name : userId,
+        email: user ? user.email : '',
+        role: user ? user.role : 'Student',
+        totalDurationSeconds: 0,
+        sessionsCount: 0,
+        status: 'Offline',
+        sessions: []
+      };
+    }
+
+    const totalSec = rows.reduce((acc, r) => acc + r.duration_seconds, 0);
+    const activeSession = rows.find(r => r.status === 'Active');
+
+    return {
+      userId,
+      name: rows[0].user_name,
+      email: rows[0].user_email,
+      role: rows[0].user_role,
+      totalDurationSeconds: totalSec,
+      sessionsCount: rows.length,
+      status: activeSession ? 'Online' : 'Offline',
+      sessions: rows.map(r => ({
+        sessionId: r.session_id,
+        joinTime: r.join_time,
+        leaveTime: r.leave_time,
+        durationSeconds: r.duration_seconds,
+        status: r.status
+      }))
+    };
   }
 };
 
